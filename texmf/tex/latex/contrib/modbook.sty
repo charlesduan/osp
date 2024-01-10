@@ -1,0 +1,439 @@
+%%
+%% This is file `modbook.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% modbook.dtx  (with options: `package')
+%% 
+%% This is a generated file.
+%% 
+%% Copyright 2014 Charles Duan <cduan@wcl.american.edu>
+%% 
+%% This program is free software: you can redistribute it and/or modify it under
+%% the terms of the GNU General Public License as published by the Free Software
+%% Foundation, either version 3 of the License, or (at your option) any later
+%% version.
+%% 
+%% This program is distributed in the hope that it will be useful, but WITHOUT
+%% ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+%% FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+%% details.
+%% 
+%% You should have received a copy of the GNU General Public License along with
+%% this program. If not, see <https://www.gnu.org/licenses/>.
+%% 
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{modbook}
+    [2024/01/09 v1.0.0 Module-based textbook]
+\RequirePackage{etoolbox}
+\RequirePackage{strings}
+\RequirePackage{graphicx}
+\RequirePackage[hyperfootnotes=false,hidelinks,linktoc=all,bookmarks=false]{hyperref}
+\RequirePackage[journalfonts,italcase,linkurl]{hicite}
+\newcommand\RepositoryPath[1]{\def\mbk@repo@path{#1}}
+\RepositoryPath{local,base}
+\def\import #1 {
+    \find@in{/}{#1}{\mbk@import@newmod}{%
+            \mbk@import@nomod{#1}
+    }%
+}
+\make@find@in{/}
+\def\having#1#2#3#4{%
+    \@ifundefined{mbk@reg@#1}{%
+        \@ifundefined{mbk@preg@#1}{#4}{#3}%
+    }{%
+        #2%
+    }%
+}%
+\def\expected#1{%
+    \@ifundefined{mbk@reg@#1}{%
+        \PackageWarning{modbook}{%
+            In file `\mbk@current@file',^^J%
+            file `#1' was expected but not already included%
+        }%
+        \G@refundefinedtrue
+    }{}%
+}
+\def\expecting#1{%
+    \@ifundefined{mbk@reg@#1}{%
+        \@ifundefined{mbk@preg@#1}{
+            \PackageWarning{modbook}{%
+                In file `\mbk@current@file',^^J%
+                file `#1' is expected later but was not included%
+            }%
+            \G@refundefinedtrue
+        }{}%
+    }{%
+        \PackageWarning{modbook}{%
+            In file `\mbk@current@file',^^J%
+            file `#1' is expected later but was already included%
+        }%
+        \gdef\@refundefined{%
+            \@latex@warning@no@line{References were out of order}%
+        }%
+    }%
+}
+\def\expectnext#1{%
+    \gdef\mbk@expectnext{#1}%
+}
+\let\mbk@expectnext\relax
+\def\readingnote#1{\def\mbk@readingnote{#1}}%
+\let\mbk@readingnote\relax
+\def\reading{%
+    \@dblarg\mbk@oreading
+}
+\def\mbk@oreading[#1]#2{%
+    \refstepcounter{reading}%
+    \find@in{ v. }{#2}{\mbk@oreading[\emph{#1}]{\emph{#2}}\@gobbletwo}{%
+        \find@start{In re }{#2}{\mbk@oreading[\emph{#1}]{\emph{#2}}\@gobble}{%
+            \@test\ifx\mbk@readingnote\relax\fi{%
+                \mbk@reading[#1]{#2}%
+            }{%
+                \mbk@reading[#1]{#2\edfootnote{\mbk@readingnote}}%
+                \global\let\mbk@readingnote\relax
+            }%
+        }%
+    }%
+}
+\make@find@in{ v. }
+\make@find@start{In re }
+\newcommand\mbk@reading{\@startsection{reading}{4}{\z@}%
+                             {3.25ex\@plus 1ex \@minus .2ex}%
+                             {1.5ex \@plus .2ex}%
+                             {\centering\normalfont\large\bfseries}}%
+\newcommand*\l@reading{\@dottedtocline{4}{5em}{0em}}
+\def\toclevel@reading{4}
+\let\readingmark\@gobble
+\newcommand\thereading{}%
+\newcounter{reading}[subsection]
+\def\readingcite#1{%
+    \vskip -1.5ex \@plus -.2ex\relax
+    \begingroup
+    \normalfont\normalsize\itshape
+    \centering
+    \emph{#1}\par
+    \endgroup
+    \nobreak
+    \vskip 1.5ex \@plus .2ex\relax
+}
+\def\opinion#1\par{%
+    \vskip 6pt
+    \noindent \textbf{#1\unskip}\par\nobreak
+}
+\def\readinghead#1{%
+    \vskip 6pt
+    \begin{centering}
+    \textbf{#1}\par
+    \end{centering}
+    \nobreak
+    \vskip 6pt
+}
+\newenvironment{statute}{%
+    \stepcounter{statlevel}%
+    \readingfont
+    \list{}{%
+        \def\makelabel##1{}%
+        \itemindent=1.5em
+        \itemsep=\parskip
+        %\labelsep=\z@
+        %\labelwidth=\parindent
+        \partopsep=\z@
+        \parsep=\z@
+        \topsep=\z@
+    }%
+}{\endlist}
+\newcounter{statlevel}
+\newenvironment{questions}[1][Notes and Questions]{%
+    \edfont
+    \vskip 12pt
+    \ifstrempty{#1}{}{%
+        \begin{centering}
+        \textbf{#1}\par
+        \end{centering}
+        \nobreak
+        \vskip 12pt
+    }%
+    \list{\arabic{qnum}}{%
+        \usecounter{qnum}%
+        \def\makelabel##1{##1.\quad}%
+        \itemindent=\parindent
+        \itemsep=\parskip
+        \labelsep=\z@
+        \labelwidth=\z@
+        \leftmargin=\z@
+        \listparindent=\parindent
+        \parsep=\parskip
+        \partopsep=\z@
+        \topsep=\z@
+        \@beginparpenalty=\@M
+        \@itempenalty=\z@
+        \@endparpenalty=\z@
+    }%
+}{\endlist}
+\newcounter{qnum}[reading]
+\def\theqnum{\@arabic\c@qnum}
+\def\SetEditorialFont#1{%
+    \gdef\edfont{#1\edmaterialtrue}%
+}
+\SetEditorialFont{\sffamily}
+\def\SetReadingFont#1{%
+    \gdef\readingfont{#1\edmaterialfalse}%
+}
+\SetReadingFont{\sffamily}
+\newif\ifedmaterial
+\ifx\@defaultfamilyhook\@empty
+    \def\@defaultfamilyhook{%
+        \ifedmaterial \edfont \else \readingfont \fi
+    }%
+\else
+    \PackageError{modbook}{%
+        \noexpand\@defaultfamilyhook already defined%
+    }{Check the package}%
+\fi
+\def\readingfootnote#1{%
+    \unskip
+    \ifedmaterial
+        \PackageError{modbook}{Reading footnote found in editorial material}{%
+            Change to \string\footnote
+        }%
+    \fi
+    \def\@thefnmark{#1}%
+    \@footnotemark
+    \@footnotetext
+}
+\def\edfootnote#1{%
+    \unskip
+    \refstepcounter{edfnct}%
+    \begingroup
+    \protected@xdef\@thefnmark{\theedfnct}%
+    \def\@makefnmark{\hbox{\@textsuperscript{%
+        \normalfont\scriptsize\@thefnmark}}%
+    }%
+    \@footnotemark
+    \@footnotetext{\edfont\EditorMark{#1}}%
+    \endgroup
+}
+\newcounter{edfnct}[reading]
+\def\theedfnct{\@fnsymbol\c@edfnct}
+\def\EditorMark#1{#1 ---Eds.}
+\let\mbk@footnote\footnote
+\long\def\footnote#1{%
+    \unskip
+    \ifedmaterial\else
+        \PackageError{modbook}{%
+            Footnote used in non-editorial material.^^J%
+            You should use \noexpand\edfootnote or \noexpand\readingfootnote^^J%
+            instead here.%
+        }{%
+            Change the footnote command%
+        }%
+    \fi
+    \mbk@footnote{\edfont #1}%
+}
+\newcommand\usegraphic[2][]{%
+    \expandafter\mbk@usegraphic\mbk@repo@path,\@nil{#1}{#2}%
+    \mbk@try@file@default
+    \PackageError{modbook}{Graphic `#2.[jpg,png]' not found}{Add the graphic}%
+    \mbk@try@file@end
+}
+\def\mbk@usegraphic#1,#2\@nil#3#4{%
+    \mbk@try@graphic{#1/\mbk@module@cur/#4}{#3}%
+    \mbk@try@graphic{#1/\mbk@module@cur/#4.png}{#3}%
+    \mbk@try@graphic{#1/\mbk@module@cur/#4.jpg}{#3}%
+    \mbk@try@graphic{#1/\mbk@module@cur/#4.pdf}{#3}%
+    \mbk@try@graphic{#1/\mbk@graphicsdir/#4}{#3}%
+    \mbk@try@graphic{#1/\mbk@graphicsdir/#4.png}{#3}%
+    \mbk@try@graphic{#1/\mbk@graphicsdir/#4.jpg}{#3}%
+    \mbk@try@graphic{#1/\mbk@graphicsdir/#4.pdf}{#3}%
+    \ifstrempty{#2}{}{\mbk@usegraphic#2\@nil{#3}{#4}}%
+}
+\def\mbk@try@graphic#1#2{%
+    \mbk@try@file{#1}{%
+        \includegraphics[
+            height=0.3\textheight,width=0.8\textwidth,
+            keepaspectratio,
+            #2,
+        ]{#1}%
+    }%
+}
+\newcommand\heregraphic[2][]{%
+    \begin{center}
+        \usegraphic[#1]{#2}%
+    \end{center}
+}
+\newcommand\captionedgraphic[3][]{%
+    \begin{figure}
+    \heregraphic[#1]{#2}%
+    \caption{#3}%
+    \label{f:#2}%
+    \end{figure}
+}
+\long\def\@makecaption#1#2{%
+  \vskip\abovecaptionskip
+  \begingroup
+      \edfont
+      \sbox\@tempboxa{\textbf{#1}: \emph{#2}}%
+      \ifdim \wd\@tempboxa >\hsize
+        \textbf{#1}: #2\par
+      \else
+        \global \@minipagefalse
+        \hb@xt@\hsize{\hfil\box\@tempboxa\hfil}%
+      \fi
+  \endgroup
+  \vskip\belowcaptionskip}
+\def\GraphicsDirectory#1{\gdef\mbk@graphicsdir{#1}}
+\GraphicsDirectory{images}
+\def\mbk@import@newmod#1#2{%
+    \mbk@try@modfile{#1}{#2}%
+    \mbk@try@file@default
+    \PackageError{modbook}{No file `#1/#2.tex' found}{%
+        Check that the file exists%
+    }%
+    \mbk@try@file@end
+}
+\def\mbk@import@nomod#1{%
+    \mbk@try@modfile{\mbk@module@cur}{#1}%
+    \mbk@try@modfile{#1}{#1}%
+    \mbk@try@file@default
+    \PackageError{modbook}{No file `#1.tex' found}{Check that the file exists}%
+    \mbk@try@file@end
+}
+\def\mbk@try@modfile#1#2{%
+    \expandafter\mbk@try@modfile@\mbk@repo@path,\@nil{#1}{#2}%
+}
+\def\mbk@try@modfile@#1,#2\@nil#3#4{%
+    \mbk@try@file{#1/#3/#4}{%
+        \mbk@module@push{#3}%
+        \mbk@register@file{#3}{#4}%
+        \def\mbk@current@file{#4}%
+        \mbk@formatting@for{#4}%
+        \@@input #1/#3/#4 %
+        \mbk@module@pop
+    }%
+    \ifstrempty{#2}{}{\mbk@try@modfile@#2\@nil{#3}{#4}}%
+}
+\def\mbk@module@cur{}
+\let\mbk@current@file\relax
+\def\mbk@module@stack{}
+\def\mbk@module@push#1{\gpreto\mbk@module@stack{#1,}\edef\mbk@module@cur{#1}}
+\def\mbk@module@pop{%
+    \expandafter\mbk@module@pop@\mbk@module@stack\@stop
+}
+\def\mbk@module@pop@#1,#2,#3\@stop{%
+    \gdef\mbk@module@stack{#2,#3}%
+    \gdef\mbk@module@cur{#2}%
+}
+\def\mbk@try@file#1#2{%
+    \openin\@inputcheck"#1"
+    \@test\ifeof\@inputcheck\fi{}{%
+        \closein\@inputcheck
+        \mbk@try@file@use{#2}%
+    }%
+}
+\def\mbk@try@file@use#1#2\mbk@try@file@end{#1}
+\def\mbk@try@file@default#1\mbk@try@file@end{#1}%
+\let\mbk@try@file@end\@empty
+\def\mbk@register@file#1#2{%
+    \def\reserved@a{#2}%
+    \ifx\mbk@expectnext\relax\else
+        \ifx\reserved@a\mbk@expectnext\else
+            \def\reserved@a{#1#2}%
+            \ifx\reserved@a\mbk@expectnext\else
+                \PackageWarning{modbook}{%
+                    In file `\mbk@current@file',^^J%
+                    file `\mbk@expectnext' should have been included here,^^J%
+                    but `#1#2' was included instead%
+                }%
+                \G@refundefinedtrue
+            \fi
+        \fi
+        \global\let\mbk@expectnext\relax
+    \fi
+    \global\@namedef{mbk@reg@#1#2}{}%
+    \global\@namedef{mbk@reg@#2}{}%
+    \immediate\write\@auxout{%
+        \string\mbk@register@pre{#1#2}%
+        \string\mbk@register@pre{#2}%
+    }%
+}
+\def\mbk@register@pre#1{%
+    \global\@namedef{mbk@preg@#1}{}%
+}
+\def\mbk@formatting@for#1{%
+    \find@try\find@in{%
+        {intro-}{\edfont\@gobbletwo}%
+        {narrative-}{\edfont\@gobbletwo}%
+        {-qs}{\edfont\@gobbletwo}%
+    }{#1}{\readingfont}%
+}
+\make@find@in{intro-}
+\make@find@in{narrative-}
+\make@find@in{-qs}
+\renewenvironment{quotation}
+               {\readingfont\list{}{\listparindent 1.5em%
+                        \itemindent    \listparindent
+                        \rightmargin   \leftmargin
+                        \parsep        \z@ \@plus\p@}%
+                \item\relax}
+               {\endlist}
+\renewenvironment{quote}
+               {\readingfont\list{}{\rightmargin\leftmargin}%
+                \item\relax}
+               {\endlist}
+\def\ps@modbook{%
+    \let\@oddfoot\@empty\let\@evenfoot\@empty
+    \def\@evenhead{\sffamily\thepage\hfil\textsc{\leftmark}}%
+    \def\@oddhead{\sffamily\rightmark\hfil\thepage}%
+    \let\@mkboth\markboth
+    \def\chaptermark##1{%
+        \markboth{%
+            \ifnum \c@secnumdepth >\m@ne
+                \if@mainmatter \@chapapp\ \thechapter. \ \fi
+            \fi
+            ##1%
+        }{}%
+    }%
+    \def\sectionmark##1{%
+        \markright {%
+            \ifnum \c@secnumdepth >\z@ \thesection. \ \fi
+            ##1%
+        }%
+    }%
+    \def\subsectionmark##1{%
+        \markright {%
+            \ifnum \c@secnumdepth >\z@ \thesubsection. \ \fi
+            ##1%
+        }%
+    }%
+    \def\readingmark##1{\markright{##1}}%
+}
+\pagestyle{modbook}
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{4}
+\renewcommand\section{\@startsection {section}{1}{\z@}%
+                                   {3.5ex \@plus 1ex \@minus .2ex}%
+                                   {2.3ex \@plus.2ex}%
+                                   {\normalfont\raggedright\Large\bfseries}}
+\renewcommand\subsection{\@startsection{subsection}{2}{\z@}%
+                                     {3.25ex\@plus 1ex \@minus .2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\normalfont\raggedright\large\bfseries}}
+\renewcommand\subsubsection{\@startsection{subsubsection}{3}{\z@}%
+                                     {3.25ex\@plus 1ex \@minus .2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\normalfont\raggedright\large\itshape}}
+\renewcommand\paragraph{\@startsection{paragraph}{5}{\parindent}%
+                    {\z@}%
+                    {-1em}%
+                    {\normalsize\bfseries\aftergroup\mbk@parsep}}
+\renewcommand\subparagraph{\@startsection{subparagraph}{6}{\parindent}%
+                                       {3.25ex \@plus1ex \@minus .2ex}%
+                                       {-1em}%
+                                      {\normalfont\normalsize\bfseries}}
+\def\mbk@parsep{.}
+\renewcommand*\l@paragraph{\@dottedtocline{5}{10em}{5em}}
+\renewcommand*\l@subparagraph{\@dottedtocline{6}{12em}{6em}}
+\endinput
+%%
+%% End of file `modbook.sty'.

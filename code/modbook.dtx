@@ -30,15 +30,17 @@
 \documentclass{ltxdoc}
 \usepackage{doctools}
 \EnableCrossrefs
-\CodelineIndex
 \RecordChanges
 \begin{document}
+
+\lstdefinestyle{lstDocStyleLaTeXCode}{print=false}
+
     \DocInput{modbook.dtx}
     \PrintChanges
-    \PrintIndex
 \end{document}
 %</driver>
 % \fi
+%
 %
 % \changes{v1.0.0}{2014/01/09}{Initial version}
 %
@@ -52,6 +54,14 @@
 %
 % \maketitle
 %
+% \tableofcontents
+%
+% \clearpage
+%
+% \parindent=0pt
+% \parskip=8pt
+%
+% \section{Introduction}
 %
 % This is a package for managing the compilation of a textbook made up of
 % several interdependent modules. The purpose of this package is:
@@ -84,13 +94,37 @@
 %
 % \StopEventually{}
 %
-% \section{Module Management}
+%
+%
+% \section{Installation and Dependencies}
+%
+% The package uses \textsf{hyperref} for internal cross-references, and
+% \textsf{hicite} for URL formatting and a few other things. It also requires
+% the \textsf{graphicx} and \textsf{etoolbox} packages.
+%
+% Because \textsf{hicite} is included, you may use it for managing citations
+% within the casebook as well, although this is optional.
+%
+%    \begin{macrocode}
+\RequirePackage{etoolbox}
+\RequirePackage{strings}
+\RequirePackage{graphicx}
+\RequirePackage[hyperfootnotes=false,hidelinks,linktoc=all,bookmarks=false]{hyperref}
+\RequirePackage[journalfonts,italcase,linkurl]{hicite}
+%    \end{macrocode}
+%
+%
+% \section{Modules}
 %
 %
 % This package uses a rigorous file hierarchy to manage the work of editors and
 % compilers. At the base of the hierarchy are \emph{repositories} of content.
 % Generally an editor (or team of editors) would be responsible for a single
 % repository. Within each repository are \emph{modules} contained in subfolders.
+%
+%
+% \subsection{Directory Structure}
+%
 % Modules contain content files consistent with the following rules:
 % \begin{itemize}
 % \item \meta{module}|/|\meta{module}|.tex|: The default outline of the module.
@@ -123,14 +157,20 @@
 %
 % \DescribeMacro\RepositoryPath \marg{path,\ldots}
 %
-% The package will sequentially search through each repository given in the
-% argument, which should be a comma-separated list, until it finds the module
-% file required. The default path is |local,base|.
+% Provides a list of repository directories. The package will sequentially
+% search through each repository given in the argument, which should be a
+% comma-separated list, until it finds the module file required. The default
+% path is |local,base|.
 %
 %    \begin{macrocode}
-\newcommand\RepositoryPath#1{\def\mbk@repo@path{#1}}
+\newcommand\RepositoryPath[1]{\def\mbk@repo@path{#1}}
 \RepositoryPath{local,base}
 %    \end{macrocode}
+%
+%
+%
+% \subsection{Importing Modules}
+%
 %
 %
 % \DescribeMacro\import \meta{name}
@@ -161,136 +201,9 @@
 \make@find@in{/}
 %    \end{macrocode}
 %
-% \subsection*{Implementation: Finding Module Files}
-%
-% Imports where a module name is given. \#1 is the module name, \#2 the file
-% name.
-%
-%    \begin{macrocode}
-\def\mbk@import@newmod#1#2{%
-    \mbk@try@modfile{#1}{#2}%
-    \mbk@try@file@default
-    \PackageError{modbook}{No file `#1/#2.tex' found}{%
-        Check that the file exists%
-    }%
-    \mbk@try@file@end
-}
-%    \end{macrocode}
-%
-% Imports where no module name is given. \#1 is the filename.
-%
-%    \begin{macrocode}
-\def\mbk@import@nomod#1{%
-    \mbk@try@modfile{\mbk@module@cur}{#1}%
-    \mbk@try@modfile{#1}{#1}%
-    \mbk@try@file@default
-    \PackageError{modbook}{No file `#1.tex' found}{Check that the file exists}%
-    \mbk@try@file@end
-}
-%    \end{macrocode}
 %
 %
-%
-% Tries a module file, across all the repositories. \#1 is the module, \#2 the
-% file.
-%
-%    \begin{macrocode}
-\def\mbk@try@modfile#1#2{%
-    \expandafter\mbk@try@modfile@\mbk@repo@path,\@nil{#1}{#2}%
-}
-\def\mbk@try@modfile@#1,#2\@nil#3#4{%
-    \mbk@try@file{#1/#3/#4}{%
-        \mbk@module@push{#3}%
-        \mbk@register@file{#3}{#4}%
-        \def\mbk@current@file{#4}%
-        \mbk@formatting@for{#4}%
-        \@@input #1/#3/#4 %
-        \mbk@module@pop
-    }%
-    \ifstrempty{#2}{}{\mbk@try@modfile#2\@nil{#3}{#4}}%
-}
-%    \end{macrocode}
-%
-% \subsection*{Implementation: Tracking the Current Module and File}
-%
-% Module imports are tracked via a stack, so it is always possible to know which
-% module is in current use. (The normal TeX grouping mechanism cannot be used,
-% because otherwise content would be included inside groups.)
-%
-% The current module.
-%
-%    \begin{macrocode}
-\def\mbk@module@cur{}
-%    \end{macrocode}
-%
-% The current file.
-%    \begin{macrocode}
-\let\mbk@current@file\relax
-%    \end{macrocode}
-%
-% The stack of module inclusions. The list is comma-separated and always ends in
-% a comma unless it is empty.
-%
-%    \begin{macrocode}
-\def\mbk@module@stack{}
-%    \end{macrocode}
-%
-% Push a module onto the stack. The module should be given as \#1.
-%
-%    \begin{macrocode}
-\def\mbk@module@push#1{\gpreto\mbk@module@stack{#1,}\edef\mbk@module@cur{#1}}
-%    \end{macrocode}
-%
-% Delete a module from the stack. If one tries to pop the last module from the
-% stack, this macro will generate an argument error (there won't be enough
-% commas).
-%
-%    \begin{macrocode}
-\def\mbk@module@pop{%
-    \expandafter\mbk@module@pop@\mbk@module@stack\@stop
-}
-\def\mbk@module@pop@#1,#2,#3\@stop{%
-    \gdef\mbk@module@stack{#2,#3}%
-    \gdef\mbk@module@cur{#2}%
-}
-%    \end{macrocode}
-%
-%
-%
-% \subsection*{Implementation: File Inclusion}
-%
-% Tries including a file among several. Several |\mbk@try@file| commands may be
-% included in sequence, terminated with |\mbk@try@file@end|. If one such command
-% succeeds, then any other material up to |\mbk@try@file@end| will be discarded.
-%
-% \#1 is the file to try, \#2 is material to include if the file is found.
-%
-%    \begin{macrocode}
-\def\mbk@try@file#1#2{%
-    \openin\@inputcheck"#1"
-    \@test\ifeof\@inputcheck\fi{}{%
-        \closein\@inputcheck
-        \mbk@try@file@use{#2}%
-    }%
-}
-\def\mbk@try@file@use#1#2\mbk@try@file@end{#1}
-%    \end{macrocode}
-%
-% What to do if no |\mbk@try@file| commands succeed. All material up to
-% |\mbk@try@file@end| is used.
-%
-%    \begin{macrocode}
-\def\mbk@try@file@default#1\mbk@try@file@end{#1}%
-\let\mbk@try@file@end\@empty
-%    \end{macrocode}
-%
-%
-%
-%
-%
-%
-%
-% \section{Cross-Reference Expectations}
+% \subsection{Cross-Reference Expectations}
 %
 % Content in modules will often cross-reference material in other modules. But
 % if the compiler can select and reorder the modules, these cross-references
@@ -383,52 +296,6 @@
 }
 \let\mbk@expectnext\relax
 %    \end{macrocode}
-%
-%
-% \subsection*{Implementation}
-%
-% To implement this cross-reference checking, every file is ``registered'' at
-% the time it is imported. The registration confirms any assertions that can be
-% determined upon registration, and records information for further checking.
-%
-% \#1 is the module, \#2 is the file.
-%
-%    \begin{macrocode}
-\def\mbk@register@file#1#2{%
-    \def\reserved@a{#2}%
-    \ifx\mbk@expectnext\relax\else
-        \ifx\reserved@a\mbk@expectnext\else
-            \def\reserved@a{#1#2}%
-            \ifx\reserved@a\mbk@expectnext\else
-                \PackageWarning{modbook}{%
-                    In file `\mbk@current@file',^^J%
-                    file `\mbk@expectnext' should have been included here,^^J%
-                    but `#1#2' was included instead%
-                }%
-                \G@refundefinedtrue
-            \fi
-        \fi
-        \global\let\mbk@expectnext\relax
-    \fi
-    \global\@namedef{mbk@reg@#1#2}{}%
-    \global\@namedef{mbk@reg@#2}{}%
-    \immediate\write\@auxout{%
-        \string\mbk@register@pre{#1#2}%
-        \string\mbk@register@pre{#2}%
-    }%
-}
-%    \end{macrocode}
-%
-% Marks that a file will be included at a later time.
-%
-%    \begin{macrocode}
-\def\mbk@register@pre#1{%
-    \global\@namedef{mbk@preg@#1}{}%
-}
-%    \end{macrocode}
-%
-%
-%
 %
 %
 %
@@ -563,7 +430,7 @@
 %    \end{macrocode}
 %
 %
-% \section{Statute and Question Environments}
+% \subsection{Statute and Question Environments}
 %
 %
 %
@@ -669,30 +536,30 @@
 % (|narrative-|\meta{file}|.tex|), and it will be set in the editorial font.
 %
 %
-% \DescribeMacro\SetEditorialFont \marg{font-commands}
+% \DescribeMacro\EditorialFont \marg{font-commands}
 %
 % Executes \meta{font-commands} for any editorial material. By default,
 % editorial material is set in a sans serif font.
 %
 %    \begin{macrocode}
-\def\SetEditorialFont#1{%
+\def\EditorialFont#1{%
     \gdef\edfont{#1\edmaterialtrue}%
 }
-\SetEditorialFont{\sffamily}
+\EditorialFont{\sffamily}
 %    \end{macrocode}
 %
 %
 %
-% \DescribeMacro\SetReadingFont \marg{font-commands}
+% \DescribeMacro\ReadingFont \marg{font-commands}
 %
 % Executes \meta{font-commands} for any reading material. By default, reading
 % material is set in a serif font.
 %
 %    \begin{macrocode}
-\def\SetReadingFont#1{%
+\def\ReadingFont#1{%
     \gdef\readingfont{#1\edmaterialfalse}%
 }
-\SetReadingFont{\sffamily}
+\ReadingFont{\rmfamily}
 %    \end{macrocode}
 %
 % \DescribeMacro\ifedmaterial
@@ -703,57 +570,21 @@
 \newif\ifedmaterial
 %    \end{macrocode}
 %
-% This code hooks into the \LaTeX\ command that resets the default font, forcing
-% editorial or reading font selection every time the font is reset.
+% \DescribeMacro\HeaderFonts \marg{pagenum} \marg{left} \marg{right}
+%
+% Sets the fonts for the running header. As described below in the
+% Implementation section, the running header consists of a chapter name on the
+% left and the current reading on the right. By default, sans serif fonts are
+% used, with the chapter set in small caps.
 %
 %    \begin{macrocode}
-\ifx\@defaultfamilyhook\@empty
-    \def\@defaultfamilyhook{%
-        \ifedmaterial \edfont \else \readingfont \fi
-    }%
-\else
-    \PackageError{modbook}{%
-        \noexpand\@defaultfamilyhook already defined%
-    }{Check the package}%
-\fi
-%    \end{macrocode}
-%
-%
-%
-% \subsubsection*{Implementation}
-%
-%
-% Selects the font based on the filename. \#1 is the filename.
-%
-%    \begin{macrocode}
-\def\mbk@formatting@for#1{%
-    \find@try\find@in{%
-        {intro-}{\edfont\@gobbletwo}%
-        {narrative-}{\edfont\@gobbletwo}%
-        {-qs}{\edfont\@gobbletwo}%
-    }{#1}{\readingfont}%
+\def\HeaderFonts#1#2#3{%
+    \gdef\mbk@page@headerfont{#1}%
+    \gdef\mbk@left@headerfont{#2}%
+    \gdef\mbk@right@headerfont{#3}%
 }
-\make@find@in{intro-}
-\make@find@in{narrative-}
-\make@find@in{-qs}
-%    \end{macrocode}
+\HeaderFonts{\sffamily}{\sffamily\scshape}{\sffamily}
 %
-% Redefine the \env{quote} and \env{quotation} environments to use the reading
-% font.
-%
-%    \begin{macrocode}
-\renewenvironment{quotation}
-               {\readingfont\list{}{\listparindent 1.5em%
-                        \itemindent    \listparindent
-                        \rightmargin   \leftmargin
-                        \parsep        \z@ \@plus\p@}%
-                \item\relax}
-               {\endlist}
-\renewenvironment{quote}
-               {\readingfont\list{}{\rightmargin\leftmargin}%
-                \item\relax}
-               {\endlist}
-%    \end{macrocode}
 %
 %
 % \subsection{Footnotes}
@@ -820,6 +651,7 @@
 %
 %    \begin{macrocode}
 \def\EditorMark#1{#1 ---Eds.}
+%    \end{macrocode}
 %
 %
 % \DescribeMacro\footnote \marg{note-text}
@@ -848,7 +680,374 @@
 %
 %
 %
-% \section{Document-Level Structure}
+%
+% \subsection{Graphics}
+%
+% The following commands are provided for inclusion of graphics. Graphics files
+% may be located either in a module directory or in a separate \texttt{images}
+% directory in a repository. The extension \texttt{.png}, \texttt{.jpg}, or
+% \texttt{.pdf} may be omitted from the filename.
+%
+%
+% \DescribeMacro\usegraphic \oarg{options} \marg{filename}
+%
+% Include a graphic in the current position inline with text. The \meta{options}
+% are those options available for the |\includegraphics| command of the
+% \textsf{graphicx} package.
+%
+%    \begin{macrocode}
+\newcommand\usegraphic[2][]{%
+    \expandafter\mbk@usegraphic\mbk@repo@path,\@nil{#1}{#2}%
+    \mbk@try@file@default
+    \PackageError{modbook}{Graphic `#2.[jpg,png]' not found}{Add the graphic}%
+    \mbk@try@file@end
+}
+\def\mbk@usegraphic#1,#2\@nil#3#4{%
+    \mbk@try@graphic{#1/\mbk@module@cur/#4.png}{#3}%
+    \mbk@try@graphic{#1/\mbk@module@cur/#4.jpg}{#3}%
+    \mbk@try@graphic{#1/\mbk@module@cur/#4.pdf}{#3}%
+    \mbk@try@graphic{#1/\mbk@graphicsdir/#4.png}{#3}%
+    \mbk@try@graphic{#1/\mbk@graphicsdir/#4.jpg}{#3}%
+    \mbk@try@graphic{#1/\mbk@graphicsdir/#4.pdf}{#3}%
+    % These are tried as a last resort
+    \find@in{.}{#4}{%
+        \mbk@try@graphic{#1/\mbk@module@cur/#4}{#3}%
+        \mbk@try@graphic{#1/\mbk@graphicsdir/#4}{#3}%
+        \@gobbletwo
+    }{}%
+    \ifstrempty{#2}{}{\mbk@usegraphic#2\@nil{#3}{#4}}%
+}
+%    \end{macrocode}
+%
+% By default, graphics take up a maximum of 30\% of the text height and 80\% of
+% the text width. The optional argument to any of the graphics inclusion macros
+% can change that.
+%
+%    \begin{macrocode}
+\def\mbk@try@graphic#1#2{%
+    \mbk@try@file{#1}{%
+        \includegraphics[
+            height=0.3\textheight,width=0.8\textwidth,
+            keepaspectratio,
+            #2,
+        ]{#1}%
+    }%
+}
+%    \end{macrocode}
+%
+% \DescribeMacro\heregraphic \oarg{options} \marg{filename}
+%
+% Centers the graphic at the current position in the text.
+%
+%    \begin{macrocode}
+\newcommand\heregraphic[2][]{%
+    \begin{center}
+        \usegraphic[#1]{#2}%
+    \end{center}
+}
+%    \end{macrocode}
+%
+%
+%
+% \DescribeMacro\captionedgraphic \oarg{options} \marg{filename} \marg{caption}
+%
+% Places the graphic in a floating figure with a caption. A cross-reference
+% label of |f:|\meta{filename} is automatically attached to the figure number.
+%
+%    \begin{macrocode}
+\newcommand\captionedgraphic[3][]{%
+    \begin{figure}
+    \heregraphic[#1]{#2}%
+    \caption{#3}%
+    \label{f:#2}%
+    \end{figure}
+}
+%    \end{macrocode}
+%
+% Because captions are always editorial material (unless specified otherwise),
+% they are displayed in the editorial font.
+%
+%    \begin{macrocode}
+\long\def\@makecaption#1#2{%
+  \vskip\abovecaptionskip
+  \begingroup
+      \edfont
+      \sbox\@tempboxa{\textbf{#1}: #2}%
+      \ifdim \wd\@tempboxa >\hsize
+        \textbf{#1}: #2\par
+      \else
+        \global \@minipagefalse
+        \hb@xt@\hsize{\hfil\box\@tempboxa\hfil}%
+      \fi
+  \endgroup
+  \vskip\belowcaptionskip}
+%    \end{macrocode}
+%
+% \DescribeMacro\GraphicsDirectory \marg{directory}
+%
+% Specifies the directory within repositories where images may be found. By
+% default, it is \texttt{images}.
+%
+%    \begin{macrocode}
+\def\GraphicsDirectory#1{\gdef\mbk@graphicsdir{#1}}
+\GraphicsDirectory{images}
+%    \end{macrocode}
+%
+%
+%
+%
+%
+%
+%
+%
+% \section{Implementation}
+%
+% The remaining text describes internal operations of the package, and need not
+% be read unless the package is doing something unexpected and you want to fix
+% it.
+%
+%
+% \subsection{Finding Module Files}
+%
+% \DescribeMacro\mbk@import@newmod \marg{module} \marg{filename}
+%
+% Imports where a module name is given.
+%
+%    \begin{macrocode}
+\def\mbk@import@newmod#1#2{%
+    \mbk@try@modfile{#1}{#2}%
+    \mbk@try@file@default
+    \PackageError{modbook}{No file `#1/#2.tex' found}{%
+        Check that the file exists%
+    }%
+    \mbk@try@file@end
+}
+%    \end{macrocode}
+%
+% \DescribeMacro\mbk@import@nomod \marg{filename}
+%
+% Imports where no module name is given.
+%
+%    \begin{macrocode}
+\def\mbk@import@nomod#1{%
+    \mbk@try@modfile{\mbk@module@cur}{#1}%
+    \mbk@try@modfile{#1}{#1}%
+    \mbk@try@file@default
+    \PackageError{modbook}{No file `#1.tex' found}{Check that the file exists}%
+    \mbk@try@file@end
+}
+%    \end{macrocode}
+%
+% \DescribeMacro\mbk@try@modfile \marg{module} \marg{filename}
+%
+% Tries to find a module file, across all the repositories.
+%
+%    \begin{macrocode}
+\def\mbk@try@modfile#1#2{%
+    \expandafter\mbk@try@modfile@\mbk@repo@path,\@nil{#1}{#2}%
+}
+\def\mbk@try@modfile@#1,#2\@nil#3#4{%
+    \mbk@try@file{#1/#3/#4}{%
+        \mbk@module@push{#3}%
+        \mbk@register@file{#3}{#4}%
+        \def\mbk@current@file{#4}%
+        \mbk@formatting@for{#4}%
+        \@@input #1/#3/#4 %
+        \mbk@module@pop
+    }%
+    \ifstrempty{#2}{}{\mbk@try@modfile@#2\@nil{#3}{#4}}%
+}
+%    \end{macrocode}
+%
+% \subsection{Tracking the Current Module and File}
+%
+% Module imports are tracked via a stack, so it is always possible to know which
+% module is in current use. (The normal TeX grouping mechanism cannot be used,
+% because otherwise content would be included inside groups.)
+%
+% \DescribeMacro\mbk@module@cur
+% The current module.
+%
+%    \begin{macrocode}
+\def\mbk@module@cur{}
+%    \end{macrocode}
+%
+% \DescribeMacro\mbk@current@file
+% The current file.
+%    \begin{macrocode}
+\let\mbk@current@file\relax
+%    \end{macrocode}
+%
+% \DescribeMacro\mbk@module@stack
+% The stack of module inclusions. The list is comma-separated and always ends in
+% a comma.
+%
+%    \begin{macrocode}
+\def\mbk@module@stack{,}
+%    \end{macrocode}
+%
+% \DescribeMacro\mbk@module@push \marg{module}
+%
+% Push a module onto the stack.
+%
+%    \begin{macrocode}
+\def\mbk@module@push#1{\gpreto\mbk@module@stack{#1,}\edef\mbk@module@cur{#1}}
+%    \end{macrocode}
+%
+%
+% \DescribeMacro\mbk@module@pop
+% Delete a module from the stack. If one tries to pop the last module from the
+% stack, this macro will generate an argument error (there won't be enough
+% commas).
+%
+%    \begin{macrocode}
+\def\mbk@module@pop{%
+    \expandafter\mbk@module@pop@\mbk@module@stack\@stop
+}
+\def\mbk@module@pop@#1,#2,#3\@stop{%
+    \gdef\mbk@module@stack{#2,#3}%
+    \gdef\mbk@module@cur{#2}%
+}
+%    \end{macrocode}
+%
+%
+%
+% \subsection*{Implementation: File Inclusion}
+%
+% \DescribeMacro\mbk@try@file \marg{filename} \marg{content}
+%
+% Tries including a file among several. Several |\mbk@try@file| commands may be
+% included in sequence, terminated with |\mbk@try@file@end|. If the file exists,
+% then \marg{content} is inserted and any other material up to
+% |\mbk@try@file@end| will be discarded.
+%
+%    \begin{macrocode}
+\def\mbk@try@file#1#2{%
+    \openin\@inputcheck"#1"
+    \@test\ifeof\@inputcheck\fi{}{%
+        \closein\@inputcheck
+        \mbk@try@file@use{#2}%
+    }%
+}
+\def\mbk@try@file@use#1#2\mbk@try@file@end{#1}
+%    \end{macrocode}
+%
+% \DescribeMacro\mbk@try@file@default \marg{content} \cs{mbk@try@file@end}
+%
+% What to do if no |\mbk@try@file| commands succeed. All material up to
+% |\mbk@try@file@end| is used.
+%
+%    \begin{macrocode}
+\def\mbk@try@file@default#1\mbk@try@file@end{#1}%
+\let\mbk@try@file@end\@empty
+%    \end{macrocode}
+%
+%
+% \subsection{Cross-Reference Checking}
+%
+% \DescribeMacro\mbk@register@file\marg{module} \marg{filename}
+%
+% To implement cross-reference checking, every file is ``registered'' at
+% the time it is imported. The registration confirms any assertions that can be
+% determined upon registration, and records information for further checking.
+%
+%    \begin{macrocode}
+\def\mbk@register@file#1#2{%
+    \def\reserved@a{#2}%
+    \ifx\mbk@expectnext\relax\else
+        \ifx\reserved@a\mbk@expectnext\else
+            \def\reserved@a{#1#2}%
+            \ifx\reserved@a\mbk@expectnext\else
+                \PackageWarning{modbook}{%
+                    In file `\mbk@current@file',^^J%
+                    file `\mbk@expectnext' should have been included here,^^J%
+                    but `#1#2' was included instead%
+                }%
+                \G@refundefinedtrue
+            \fi
+        \fi
+        \global\let\mbk@expectnext\relax
+    \fi
+    \global\@namedef{mbk@reg@#1#2}{}%
+    \global\@namedef{mbk@reg@#2}{}%
+    \immediate\write\@auxout{%
+        \string\mbk@register@pre{#1#2}%
+        \string\mbk@register@pre{#2}%
+    }%
+}
+%    \end{macrocode}
+%
+% \DescribeMacro\mbk@register@pre\marg{filename}
+%
+% Marks that a file will be included at a later time.
+%
+%    \begin{macrocode}
+\def\mbk@register@pre#1{%
+    \global\@namedef{mbk@preg@#1}{}%
+}
+%    \end{macrocode}
+%
+%
+% \subsection{Fonts}
+%
+% \DescribeMacro\@defaultfamilyhook
+% This code hooks into the \LaTeX\ command that resets the default font, forcing
+% editorial or reading font selection every time the font is reset.
+%
+%    \begin{macrocode}
+\ifx\@defaultfamilyhook\@empty
+    \def\@defaultfamilyhook{%
+        \ifedmaterial \edfont \else \readingfont \fi
+    }%
+\else
+    \PackageError{modbook}{%
+        \noexpand\@defaultfamilyhook already defined%
+    }{Check the package}%
+\fi
+%    \end{macrocode}
+%
+%
+% \DescribeMacro\mbk@formatting@for \marg{filename}
+%
+% Selects the font based on the filename.
+%
+%    \begin{macrocode}
+\def\mbk@formatting@for#1{%
+    \find@try\find@in{%
+        {intro-}{\edfont\@gobbletwo}%
+        {narrative-}{\edfont\@gobbletwo}%
+        {-qs}{\edfont\@gobbletwo}%
+    }{#1}{\readingfont}%
+}
+\make@find@in{intro-}
+\make@find@in{narrative-}
+\make@find@in{-qs}
+%    \end{macrocode}
+%
+% \DescribeEnv{quotation}
+% \DescribeEnv{quote}
+% Redefine the \env{quote} and \env{quotation} environments to use the reading
+% font.
+%
+%    \begin{macrocode}
+\renewenvironment{quotation}
+               {\readingfont\list{}{\listparindent 1.5em%
+                        \itemindent    \listparindent
+                        \rightmargin   \leftmargin
+                        \parsep        \z@ \@plus\p@}%
+                \item\relax}
+               {\endlist}
+\renewenvironment{quote}
+               {\readingfont\list{}{\rightmargin\leftmargin}%
+                \item\relax}
+               {\endlist}
+%    \end{macrocode}
+%
+%
+%
+%
+%
+% \subsection{Document-Level Structure}
 %
 % The introduction of readings as a document section type requires some
 % modifications to the usual \LaTeX\ document structure.
@@ -859,8 +1058,16 @@
 %    \begin{macrocode}
 \def\ps@modbook{%
     \let\@oddfoot\@empty\let\@evenfoot\@empty
-    \def\@evenhead{\sffamily\thepage\hfil\textsc{\leftmark}}%
-    \def\@oddhead{\sffamily\rightmark\hfil\thepage}%
+    \def\@evenhead{%
+        {\mbk@page@headerfont{\thepage}}%
+        \hfil
+        {\mbk@left@headerfont{\leftmark}}%
+    }%
+    \def\@oddhead{%
+        {\mbk@right@headerfont{\rightmark}}%
+        \hfil
+        {\mbk@page@headerfont{\thepage}}%
+    }%
     \let\@mkboth\markboth
     \def\chaptermark##1{%
         \markboth{%
@@ -923,134 +1130,6 @@
 %
 %
 %
-%
-% \section{Graphics}
-%
-% The following commands are provided for inclusion of graphics. Graphics files
-% may be located either in a module directory or in a separate \texttt{images}
-% directory in a repository. The extension \texttt{.png}, \texttt{.jpg}, or
-% \texttt{.pdf} may be omitted from the filename.
-%
-%
-% \DescribeMacro\usegraphic \oarg{options} \marg{filename}
-%
-% Include a graphic in the current position inline with text. The \meta{options}
-% are those options available for the |\includegraphics| command of the
-% \textsf{graphicx} package.
-%
-%    \begin{macrocode}
-\newcommand\usegraphic[2][]{%
-    \expandafter\mbk@usegraphic\mbk@repo@path,\@nil{#1}{#2}%
-    \mbk@try@file@default
-    \PackageError{modbook}{Graphic `#2.[jpg,png]' not found}{Add the graphic}%
-    \mbk@try@file@end
-}
-\def\mbk@usegraphic#1,#2\@nil#3#4{%
-    \mbk@try@graphic{#1/\mbk@module@cur/#4}{#3}%
-    \mbk@try@graphic{#1/\mbk@module@cur/#4.png}{#3}%
-    \mbk@try@graphic{#1/\mbk@module@cur/#4.jpg}{#3}%
-    \mbk@try@graphic{#1/\mbk@module@cur/#4.pdf}{#3}%
-    \mbk@try@graphic{#1/\mbk@graphicsdir/#4}{#3}%
-    \mbk@try@graphic{#1/\mbk@graphicsdir/#4.png}{#3}%
-    \mbk@try@graphic{#1/\mbk@graphicsdir/#4.jpg}{#3}%
-    \mbk@try@graphic{#1/\mbk@graphicsdir/#4.pdf}{#3}%
-    \ifstrempty{#2}{}{\mbk@usegraphic#2\@nil{#3}{#4}}%
-}
-%    \end{macrocode}
-%
-% By default, graphics take up a maximum of 30\% of the text height and 80\% of
-% the text width. The optional argument to any of the graphics inclusion macros
-% can change that.
-%
-%    \begin{macrocode}
-\def\mbk@try@graphic#1#2{%
-    \mbk@try@file{#1}{%
-        \includegraphics[
-            height=0.3\textheight,width=0.8\textwidth,
-            keepaspectratio,
-            #2,
-        ]{#1}%
-    }%
-}
-%    \end{macrocode}
-%
-% \DescribeMacro\heregraphic \oarg{options} \marg{filename}
-%
-% Centers the graphic at the current position in the text.
-%
-%    \begin{macrocode}
-\newcommand\heregraphic[2][]{%
-    \begin{center}
-        \usegraphic[#1]{#2}%
-    \end{center}
-}
-%    \end{macrocode}
-%
-%
-%
-% \DescribeMacro\captionedgraphic \oarg{options} \marg{filename} \marg{caption}
-%
-% Places the graphic in a floating figure with a caption. A cross-reference
-% label of |f:|\meta{filename} is automatically attached to the figure number.
-%
-%    \begin{macrocode}
-\newcommand\captionedgraphic[3][]{%
-    \begin{figure}
-    \heregraphic[#1]{#2}%
-    \caption{#3}%
-    \label{f:#2}%
-    \end{figure}
-}
-%    \end{macrocode}
-%
-% Because captions are always editorial material (unless specified otherwise),
-% they are displayed in the editorial font.
-%
-%    \begin{macrocode}
-\long\def\@makecaption#1#2{%
-  \vskip\abovecaptionskip
-  \begingroup
-      \edfont
-      \sbox\@tempboxa{\textbf{#1}: \emph{#2}}%
-      \ifdim \wd\@tempboxa >\hsize
-        \textbf{#1}: #2\par
-      \else
-        \global \@minipagefalse
-        \hb@xt@\hsize{\hfil\box\@tempboxa\hfil}%
-      \fi
-  \endgroup
-  \vskip\belowcaptionskip}
-%    \end{macrocode}
-%
-% \DescribeMacro\GraphicsDirectory \marg{directory}
-%
-% Specifies the directory within repositories where images may be found. By
-% default, it is \texttt{images}.
-%
-%    \begin{macrocode}
-\def\GraphicsDirectory#1{\gdef\mbk@graphicsdir{#1}}
-\GraphicsDirectory{images}
-%    \end{macrocode}
-%
-%
-%
-%
-%
-%
-% \section{Dependencies}
-%
-% The package uses \textsf{hyperref} for internal cross-references, and
-% \textsf{hicite} for URL formatting. Because \textsf{hicite} is included, you
-% may use it for managing citations within the casebook as well, although this
-% is optional.
-%
-%    \begin{macrocode}
-\RequirePackage{etoolbox}
-\RequirePackage{strings}
-\RequirePackage{graphicx}
-\RequirePackage[hyperfootnotes=false,hidelinks,linktoc=all,bookmarks=false]{hyperref}
-\RequirePackage[journalfonts,italcase,linkurl]{hicite}
-%    \end{macrocode}
 %
 %
 %

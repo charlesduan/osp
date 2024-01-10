@@ -1,0 +1,148 @@
+\documentclass[12pt]{book}
+
+\title{Open Source Property}
+\author{Stephen Clowney, James Grimmelmann, Michael Grynberg,\\
+Jeremy Sheff, and Rebecca Tushnet}
+
+\usepackage{fontspec}
+
+
+\setmainfont{Constantia}
+\setsansfont[Scale=MatchLowercase]{Calibri}
+
+%
+% Use the modbook package. See the file code/modbook.pdf for documentation.
+%
+\usepackage{modbook}
+
+
+%
+% Select the directories in which modules are located. The order should be of
+% search preference, and by default it is ``local,base''. Here, this specifies
+% that the ``cduan'' repository should be searched first, and then the ``base''
+% repository.
+%
+\RepositoryPath{cduan,base}
+
+%
+% Sets the fonts to be used for editorial material and readings, respectively.
+% By default, editorial material is set in a sans serif font, while readings are
+% in a serif font.
+%
+% \EditorialFont{\sffamily}
+% \ReadingFont{\rmfamily}
+%
+% Sets the fonts for the running headers.
+%
+% \HeaderFonts{\sffamily}{\sffamily\scshape}{\sffamily}
+
+
+
+\begin{document}
+
+%
+% Provides more generous typesetting limits. \frenchspacing in particular is
+% needed because periods have not been marked per TeX conventions in the reading
+% materials.
+%
+\sloppy
+\frenchspacing
+\raggedbottom
+\hbadness=9999
+
+%
+% Any initial matter (that would be paginated with roman numerals) goes below.
+%
+
+\frontmatter
+
+\maketitle
+
+\tableofcontents
+
+
+
+%
+% Switches to arabic numerals.
+%
+
+\mainmatter
+
+
+%
+% Modules are added using the \import commands. Other sectioning, primarily
+% \part commands, may be provided as well.
+%
+
+\part{Foundations}
+
+\import ownership
+
+\import subject-matter
+
+\import allocation
+
+
+
+\part{Possession}
+
+\import torts
+
+\import found-stolen
+
+\import adverse-possession
+
+\import good-faith-purchasers
+
+\import bailments-liens
+
+
+\part{Interests}
+
+\import estates
+
+\import marketability
+
+\import easements
+
+\import concurrent-ownership
+
+\import leases
+
+
+
+\part{Transfers}
+
+\import gifts
+
+\import wills-intestacy
+
+\import land-transactions
+
+\import mortgages
+
+\import recording-acts
+
+%
+% Note that the takings and regulatory-takings modules have been modified as
+% indicated in the cduan directory, and so the book will compile from that
+% version based on the \RepositoryPath specification.
+%
+
+\import takings
+
+
+\part{Use}
+
+\import nuisance
+
+\import regulatory-takings
+
+\import zoning
+
+\import covenants
+
+\import common-interest
+
+
+\end{document}

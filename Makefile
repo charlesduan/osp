@@ -1,11 +1,6 @@
-branchname := $(shell git rev-parse --abbrev-ref HEAD | sed 's/^[^-]*-//')
-
-PANDOC = pandoc
-PANDOC_TEX_OPTS = -S --to=latex-auto_identifiers-backtick_code_blocks
-
 UNAME := $(shell uname)
 
-export TEXINPUTS := ../../texmf//:
+export TEXINPUTS := .:texmf//:
 
 ifeq ($(shell uname), Darwin)
     STAT=stat -f %m
@@ -14,36 +9,10 @@ else
 endif
 
 TEXCMD = xelatex
-CHECKSIGNED =
-
-main: $(branchname).pdf
 
 
-parts:
-	cpdf -i $(branchname).pdf 1 -o cover.pdf
-	cpdf -merge -i $(branchname).pdf 2-end AND -pad-multiple 4 -o body.pdf
 
-signed:
-	$(CHECKSIGNED)
-	echo 'Enter your name for signing (blank for hand signature): ' ; \
-	read SIGNATURE ; \
-	echo 'TEXCMD += \\\\def\\\\signedby{'"$$SIGNATURE"'}\\\\input' \
-	    >> Makefile
-	make
-	echo 'main signed: CHECKSIGNED = $$(error BRIEF IS ALREADY SIGNED)' \
-	    >> Makefile
-
-word: $(branchname).odt
-
-%.odt: %.tex FORCE
-	make4ht -c lr-oo.cfg -f odt "$<"
-
-booklet: out.pdf
-
-out.pdf: $(branchname).pdf
-	booklet.rb "$<"
-
-%.pdf: %.tex mkd2tex FORCE
+%.pdf: %.tex FORCE
 	$(CHECKSIGNED)
 	export SOURCE_DATE_EPOCH=`$(STAT) "$<"`; \
 	base="`basename "$<" .tex`"; \
@@ -57,19 +26,7 @@ out.pdf: $(branchname).pdf
 	    fi \
 	done
 
-%.txt: %.pdf
-	pdftotext -layout -enc UTF-8 "$<"
-
-
 FORCE:
-
-MARKDOWN_FILES = $(wildcard *.mkd)
-TEX_FROM_MKD = $(MARKDOWN_FILES:%.mkd=%.tex)
-
-mkd2tex: $(TEX_FROM_MKD)
-
-%.tex: %.mkd
-	$(PANDOC) $(PANDOC_TEX_OPTS) "$<" -o "$@"
 
 clean:
 	rm -f *.log *.aux *.toc *.dvi *.toa *.snm *.nav *.out

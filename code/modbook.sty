@@ -26,7 +26,12 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{modbook}
     [2024/01/09 v1.0.0 Module-based textbook]
-\newcommand\RepositoryPath#1{\def\mbk@repo@path{#1}}
+\RequirePackage{etoolbox}
+\RequirePackage{strings}
+\RequirePackage{graphicx}
+\RequirePackage[hyperfootnotes=false,hidelinks,linktoc=all,bookmarks=false]{hyperref}
+\RequirePackage[journalfonts,italcase,linkurl]{hicite}
+\newcommand\RepositoryPath[1]{\def\mbk@repo@path{#1}}
 \RepositoryPath{local,base}
 \def\import #1 {
     \find@in{/}{#1}{\mbk@import@newmod}{%
@@ -34,56 +39,6 @@
     }%
 }
 \make@find@in{/}
-\def\mbk@import@newmod#1#2{%
-    \mbk@try@modfile{#1}{#2}%
-    \mbk@try@file@default
-    \PackageError{modbook}{No file `#1/#2.tex' found}{%
-        Check that the file exists%
-    }%
-    \mbk@try@file@end
-}
-\def\mbk@import@nomod#1{%
-    \mbk@try@modfile{\mbk@module@cur}{#1}%
-    \mbk@try@modfile{#1}{#1}%
-    \mbk@try@file@default
-    \PackageError{modbook}{No file `#1.tex' found}{Check that the file exists}%
-    \mbk@try@file@end
-}
-\def\mbk@try@modfile#1#2{%
-    \expandafter\mbk@try@modfile@\mbk@repo@path,\@nil{#1}{#2}%
-}
-\def\mbk@try@modfile@#1,#2\@nil#3#4{%
-    \mbk@try@file{#1/#3/#4}{%
-        \mbk@module@push{#3}%
-        \mbk@register@file{#3}{#4}%
-        \def\mbk@current@file{#4}%
-        \mbk@formatting@for{#4}%
-        \@@input #1/#3/#4 %
-        \mbk@module@pop
-    }%
-    \ifstrempty{#2}{}{\mbk@try@modfile#2\@nil{#3}{#4}}%
-}
-\def\mbk@module@cur{}
-\let\mbk@current@file\relax
-\def\mbk@module@stack{}
-\def\mbk@module@push#1{\gpreto\mbk@module@stack{#1,}\edef\mbk@module@cur{#1}}
-\def\mbk@module@pop{%
-    \expandafter\mbk@module@pop@\mbk@module@stack\@stop
-}
-\def\mbk@module@pop@#1,#2,#3\@stop{%
-    \gdef\mbk@module@stack{#2,#3}%
-    \gdef\mbk@module@cur{#2}%
-}
-\def\mbk@try@file#1#2{%
-    \openin\@inputcheck"#1"
-    \@test\ifeof\@inputcheck\fi{}{%
-        \closein\@inputcheck
-        \mbk@try@file@use{#2}%
-    }%
-}
-\def\mbk@try@file@use#1#2\mbk@try@file@end{#1}
-\def\mbk@try@file@default#1\mbk@try@file@end{#1}%
-\let\mbk@try@file@end\@empty
 \def\having#1#2#3#4{%
     \@ifundefined{mbk@reg@#1}{%
         \@ifundefined{mbk@preg@#1}{#4}{#3}%
@@ -123,32 +78,6 @@
     \gdef\mbk@expectnext{#1}%
 }
 \let\mbk@expectnext\relax
-\def\mbk@register@file#1#2{%
-    \def\reserved@a{#2}%
-    \ifx\mbk@expectnext\relax\else
-        \ifx\reserved@a\mbk@expectnext\else
-            \def\reserved@a{#1#2}%
-            \ifx\reserved@a\mbk@expectnext\else
-                \PackageWarning{modbook}{%
-                    In file `\mbk@current@file',^^J%
-                    file `\mbk@expectnext' should have been included here,^^J%
-                    but `#1#2' was included instead%
-                }%
-                \G@refundefinedtrue
-            \fi
-        \fi
-        \global\let\mbk@expectnext\relax
-    \fi
-    \global\@namedef{mbk@reg@#1#2}{}%
-    \global\@namedef{mbk@reg@#2}{}%
-    \immediate\write\@auxout{%
-        \string\mbk@register@pre{#1#2}%
-        \string\mbk@register@pre{#2}%
-    }%
-}
-\def\mbk@register@pre#1{%
-    \global\@namedef{mbk@preg@#1}{}%
-}
 \def\readingnote#1{\def\mbk@readingnote{#1}}%
 \let\mbk@readingnote\relax
 \def\reading{%
@@ -244,45 +173,21 @@
 }{\endlist}
 \newcounter{qnum}[reading]
 \def\theqnum{\@arabic\c@qnum}
-\def\SetEditorialFont#1{%
+\def\EditorialFont#1{%
     \gdef\edfont{#1\edmaterialtrue}%
 }
-\SetEditorialFont{\sffamily}
-\def\SetReadingFont#1{%
+\EditorialFont{\sffamily}
+\def\ReadingFont#1{%
     \gdef\readingfont{#1\edmaterialfalse}%
 }
-\SetReadingFont{\sffamily}
+\ReadingFont{\rmfamily}
 \newif\ifedmaterial
-\ifx\@defaultfamilyhook\@empty
-    \def\@defaultfamilyhook{%
-        \ifedmaterial \edfont \else \readingfont \fi
-    }%
-\else
-    \PackageError{modbook}{%
-        \noexpand\@defaultfamilyhook already defined%
-    }{Check the package}%
-\fi
-\def\mbk@formatting@for#1{%
-    \find@try\find@in{%
-        {intro-}{\edfont\@gobbletwo}%
-        {narrative-}{\edfont\@gobbletwo}%
-        {-qs}{\edfont\@gobbletwo}%
-    }{#1}{\readingfont}%
+\def\HeaderFonts#1#2#3{%
+    \gdef\mbk@page@headerfont{#1}%
+    \gdef\mbk@left@headerfont{#2}%
+    \gdef\mbk@right@headerfont{#3}%
 }
-\make@find@in{intro-}
-\make@find@in{narrative-}
-\make@find@in{-qs}
-\renewenvironment{quotation}
-               {\readingfont\list{}{\listparindent 1.5em%
-                        \itemindent    \listparindent
-                        \rightmargin   \leftmargin
-                        \parsep        \z@ \@plus\p@}%
-                \item\relax}
-               {\endlist}
-\renewenvironment{quote}
-               {\readingfont\list{}{\rightmargin\leftmargin}%
-                \item\relax}
-               {\endlist}
+\HeaderFonts{\sffamily}{\sffamily\scshape}{\sffamily}
 \def\readingfootnote#1{%
     \unskip
     \ifedmaterial
@@ -323,10 +228,181 @@
     \fi
     \mbk@footnote{\edfont #1}%
 }
+\newcommand\usegraphic[2][]{%
+    \expandafter\mbk@usegraphic\mbk@repo@path,\@nil{#1}{#2}%
+    \mbk@try@file@default
+    \PackageError{modbook}{Graphic `#2.[jpg,png]' not found}{Add the graphic}%
+    \mbk@try@file@end
+}
+\def\mbk@usegraphic#1,#2\@nil#3#4{%
+    \mbk@try@graphic{#1/\mbk@module@cur/#4.png}{#3}%
+    \mbk@try@graphic{#1/\mbk@module@cur/#4.jpg}{#3}%
+    \mbk@try@graphic{#1/\mbk@module@cur/#4.pdf}{#3}%
+    \mbk@try@graphic{#1/\mbk@graphicsdir/#4.png}{#3}%
+    \mbk@try@graphic{#1/\mbk@graphicsdir/#4.jpg}{#3}%
+    \mbk@try@graphic{#1/\mbk@graphicsdir/#4.pdf}{#3}%
+    % These are tried as a last resort
+    \find@in{.}{#4}{%
+        \mbk@try@graphic{#1/\mbk@module@cur/#4}{#3}%
+        \mbk@try@graphic{#1/\mbk@graphicsdir/#4}{#3}%
+        \@gobbletwo
+    }{}%
+    \ifstrempty{#2}{}{\mbk@usegraphic#2\@nil{#3}{#4}}%
+}
+\def\mbk@try@graphic#1#2{%
+    \mbk@try@file{#1}{%
+        \includegraphics[
+            height=0.3\textheight,width=0.8\textwidth,
+            keepaspectratio,
+            #2,
+        ]{#1}%
+    }%
+}
+\newcommand\heregraphic[2][]{%
+    \begin{center}
+        \usegraphic[#1]{#2}%
+    \end{center}
+}
+\newcommand\captionedgraphic[3][]{%
+    \begin{figure}
+    \heregraphic[#1]{#2}%
+    \caption{#3}%
+    \label{f:#2}%
+    \end{figure}
+}
+\long\def\@makecaption#1#2{%
+  \vskip\abovecaptionskip
+  \begingroup
+      \edfont
+      \sbox\@tempboxa{\textbf{#1}: #2}%
+      \ifdim \wd\@tempboxa >\hsize
+        \textbf{#1}: #2\par
+      \else
+        \global \@minipagefalse
+        \hb@xt@\hsize{\hfil\box\@tempboxa\hfil}%
+      \fi
+  \endgroup
+  \vskip\belowcaptionskip}
+\def\GraphicsDirectory#1{\gdef\mbk@graphicsdir{#1}}
+\GraphicsDirectory{images}
+\def\mbk@import@newmod#1#2{%
+    \mbk@try@modfile{#1}{#2}%
+    \mbk@try@file@default
+    \PackageError{modbook}{No file `#1/#2.tex' found}{%
+        Check that the file exists%
+    }%
+    \mbk@try@file@end
+}
+\def\mbk@import@nomod#1{%
+    \mbk@try@modfile{\mbk@module@cur}{#1}%
+    \mbk@try@modfile{#1}{#1}%
+    \mbk@try@file@default
+    \PackageError{modbook}{No file `#1.tex' found}{Check that the file exists}%
+    \mbk@try@file@end
+}
+\def\mbk@try@modfile#1#2{%
+    \expandafter\mbk@try@modfile@\mbk@repo@path,\@nil{#1}{#2}%
+}
+\def\mbk@try@modfile@#1,#2\@nil#3#4{%
+    \mbk@try@file{#1/#3/#4}{%
+        \mbk@module@push{#3}%
+        \mbk@register@file{#3}{#4}%
+        \def\mbk@current@file{#4}%
+        \mbk@formatting@for{#4}%
+        \@@input #1/#3/#4 %
+        \mbk@module@pop
+    }%
+    \ifstrempty{#2}{}{\mbk@try@modfile@#2\@nil{#3}{#4}}%
+}
+\def\mbk@module@cur{}
+\let\mbk@current@file\relax
+\def\mbk@module@stack{,}
+\def\mbk@module@push#1{\gpreto\mbk@module@stack{#1,}\edef\mbk@module@cur{#1}}
+\def\mbk@module@pop{%
+    \expandafter\mbk@module@pop@\mbk@module@stack\@stop
+}
+\def\mbk@module@pop@#1,#2,#3\@stop{%
+    \gdef\mbk@module@stack{#2,#3}%
+    \gdef\mbk@module@cur{#2}%
+}
+\def\mbk@try@file#1#2{%
+    \openin\@inputcheck"#1"
+    \@test\ifeof\@inputcheck\fi{}{%
+        \closein\@inputcheck
+        \mbk@try@file@use{#2}%
+    }%
+}
+\def\mbk@try@file@use#1#2\mbk@try@file@end{#1}
+\def\mbk@try@file@default#1\mbk@try@file@end{#1}%
+\let\mbk@try@file@end\@empty
+\def\mbk@register@file#1#2{%
+    \def\reserved@a{#2}%
+    \ifx\mbk@expectnext\relax\else
+        \ifx\reserved@a\mbk@expectnext\else
+            \def\reserved@a{#1#2}%
+            \ifx\reserved@a\mbk@expectnext\else
+                \PackageWarning{modbook}{%
+                    In file `\mbk@current@file',^^J%
+                    file `\mbk@expectnext' should have been included here,^^J%
+                    but `#1#2' was included instead%
+                }%
+                \G@refundefinedtrue
+            \fi
+        \fi
+        \global\let\mbk@expectnext\relax
+    \fi
+    \global\@namedef{mbk@reg@#1#2}{}%
+    \global\@namedef{mbk@reg@#2}{}%
+    \immediate\write\@auxout{%
+        \string\mbk@register@pre{#1#2}%
+        \string\mbk@register@pre{#2}%
+    }%
+}
+\def\mbk@register@pre#1{%
+    \global\@namedef{mbk@preg@#1}{}%
+}
+\ifx\@defaultfamilyhook\@empty
+    \def\@defaultfamilyhook{%
+        \ifedmaterial \edfont \else \readingfont \fi
+    }%
+\else
+    \PackageError{modbook}{%
+        \noexpand\@defaultfamilyhook already defined%
+    }{Check the package}%
+\fi
+\def\mbk@formatting@for#1{%
+    \find@try\find@in{%
+        {intro-}{\edfont\@gobbletwo}%
+        {narrative-}{\edfont\@gobbletwo}%
+        {-qs}{\edfont\@gobbletwo}%
+    }{#1}{\readingfont}%
+}
+\make@find@in{intro-}
+\make@find@in{narrative-}
+\make@find@in{-qs}
+\renewenvironment{quotation}
+               {\readingfont\list{}{\listparindent 1.5em%
+                        \itemindent    \listparindent
+                        \rightmargin   \leftmargin
+                        \parsep        \z@ \@plus\p@}%
+                \item\relax}
+               {\endlist}
+\renewenvironment{quote}
+               {\readingfont\list{}{\rightmargin\leftmargin}%
+                \item\relax}
+               {\endlist}
 \def\ps@modbook{%
     \let\@oddfoot\@empty\let\@evenfoot\@empty
-    \def\@evenhead{\sffamily\thepage\hfil\textsc{\leftmark}}%
-    \def\@oddhead{\sffamily\rightmark\hfil\thepage}%
+    \def\@evenhead{%
+        {\mbk@page@headerfont{\thepage}}%
+        \hfil
+        {\mbk@left@headerfont{\leftmark}}%
+    }%
+    \def\@oddhead{%
+        {\mbk@right@headerfont{\rightmark}}%
+        \hfil
+        {\mbk@page@headerfont{\thepage}}%
+    }%
     \let\@mkboth\markboth
     \def\chaptermark##1{%
         \markboth{%
@@ -376,64 +452,6 @@
 \def\mbk@parsep{.}
 \renewcommand*\l@paragraph{\@dottedtocline{5}{10em}{5em}}
 \renewcommand*\l@subparagraph{\@dottedtocline{6}{12em}{6em}}
-\newcommand\usegraphic[2][]{%
-    \expandafter\mbk@usegraphic\mbk@repo@path,\@nil{#1}{#2}%
-    \mbk@try@file@default
-    \PackageError{modbook}{Graphic `#2.[jpg,png]' not found}{Add the graphic}%
-    \mbk@try@file@end
-}
-\def\mbk@usegraphic#1,#2\@nil#3#4{%
-    \mbk@try@graphic{#1/\mbk@module@cur/#4}{#3}%
-    \mbk@try@graphic{#1/\mbk@module@cur/#4.png}{#3}%
-    \mbk@try@graphic{#1/\mbk@module@cur/#4.jpg}{#3}%
-    \mbk@try@graphic{#1/\mbk@module@cur/#4.pdf}{#3}%
-    \mbk@try@graphic{#1/\mbk@graphicsdir/#4}{#3}%
-    \mbk@try@graphic{#1/\mbk@graphicsdir/#4.png}{#3}%
-    \mbk@try@graphic{#1/\mbk@graphicsdir/#4.jpg}{#3}%
-    \mbk@try@graphic{#1/\mbk@graphicsdir/#4.pdf}{#3}%
-    \ifstrempty{#2}{}{\mbk@usegraphic#2\@nil{#3}{#4}}%
-}
-\def\mbk@try@graphic#1#2{%
-    \mbk@try@file{#1}{%
-        \includegraphics[
-            height=0.3\textheight,width=0.8\textwidth,
-            keepaspectratio,
-            #2,
-        ]{#1}%
-    }%
-}
-\newcommand\heregraphic[2][]{%
-    \begin{center}
-        \usegraphic[#1]{#2}%
-    \end{center}
-}
-\newcommand\captionedgraphic[3][]{%
-    \begin{figure}
-    \heregraphic[#1]{#2}%
-    \caption{#3}%
-    \label{f:#2}%
-    \end{figure}
-}
-\long\def\@makecaption#1#2{%
-  \vskip\abovecaptionskip
-  \begingroup
-      \edfont
-      \sbox\@tempboxa{\textbf{#1}: \emph{#2}}%
-      \ifdim \wd\@tempboxa >\hsize
-        \textbf{#1}: #2\par
-      \else
-        \global \@minipagefalse
-        \hb@xt@\hsize{\hfil\box\@tempboxa\hfil}%
-      \fi
-  \endgroup
-  \vskip\belowcaptionskip}
-\def\GraphicsDirectory#1{\gdef\mbk@graphicsdir{#1}}
-\GraphicsDirectory{images}
-\RequirePackage{etoolbox}
-\RequirePackage{strings}
-\RequirePackage{graphicx}
-\RequirePackage[hyperfootnotes=false,hidelinks,linktoc=all,bookmarks=false]{hyperref}
-\RequirePackage[journalfonts,italcase,linkurl]{hicite}
 \endinput
 %%
 %% End of file `modbook.sty'.

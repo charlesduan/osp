@@ -2,3 +2,6 @@ local
 docx
 *.swo
 *.swp
+*.log
+*.aux
+*.toc
