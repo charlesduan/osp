@@ -31,7 +31,7 @@ read on.
 
 ## How to Use This Distribution
 
-*Open Source Property* is a ``modular'' textbook, in that chapters are provided
+*Open Source Property* is a "modular" textbook, in that chapters are provided
 as somewhat independent units that others, called **compilers** in this
 documentation, can arrange into a textbook or other material. Others, called
 **editors** in this documentation, may wish to contribute their own modules, or
@@ -40,7 +40,7 @@ person may serve both roles, making edits to the base modules and then
 compiling them into a custom textbook.
 
 The files in this distribution are arranged to facilitate the work of both
-authors and editors. The directory `base` contains the original *Open Source
+editors and compilers. The directory `base` contains the original *Open Source
 Property* content. Each module is stored in a subdirectory, containing `.tex`
 files for the content.
 
@@ -102,12 +102,15 @@ For more on importing modules, and also to see how to adjust the appearance and
 formatting of the book, see the `book.tex` comments and the `modbook.pdf`
 documentation.
 
+The `cduan` directory is provided as an example of editing a module, adding a
+module, and using edited content in a book.
+
 
 ## Bundled Programs
 
 The `bin` directory contains two programs to help with assembling modules.
 
-**Importing More *OSP* Modules.** Not all of the written modules have been
+**Importing More Modules.** Not all of the written modules have been
 converted to TeX format. If one is missing, you can help to convert it. Download
 the Word copy of the module from the website, and run:
 ```
