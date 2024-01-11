@@ -173,24 +173,21 @@
 }{\endlist}
 \newcounter{qnum}[reading]
 \def\theqnum{\@arabic\c@qnum}
-\def\SetEditorialFont#1{%
+\def\EditorialFont#1{%
     \gdef\edfont{#1\edmaterialtrue}%
 }
-\SetEditorialFont{\sffamily}
-\def\SetReadingFont#1{%
+\EditorialFont{\sffamily}
+\def\ReadingFont#1{%
     \gdef\readingfont{#1\edmaterialfalse}%
 }
-\SetReadingFont{\sffamily}
+\ReadingFont{\rmfamily}
 \newif\ifedmaterial
-\ifx\@defaultfamilyhook\@empty
-    \def\@defaultfamilyhook{%
-        \ifedmaterial \edfont \else \readingfont \fi
-    }%
-\else
-    \PackageError{modbook}{%
-        \noexpand\@defaultfamilyhook already defined%
-    }{Check the package}%
-\fi
+\def\HeaderFonts#1#2#3{%
+    \gdef\mbk@page@headerfont{#1}%
+    \gdef\mbk@left@headerfont{#2}%
+    \gdef\mbk@right@headerfont{#3}%
+}
+\HeaderFonts{\sffamily}{\sffamily\scshape}{\sffamily}
 \def\readingfootnote#1{%
     \unskip
     \ifedmaterial
@@ -238,14 +235,18 @@
     \mbk@try@file@end
 }
 \def\mbk@usegraphic#1,#2\@nil#3#4{%
-    \mbk@try@graphic{#1/\mbk@module@cur/#4}{#3}%
     \mbk@try@graphic{#1/\mbk@module@cur/#4.png}{#3}%
     \mbk@try@graphic{#1/\mbk@module@cur/#4.jpg}{#3}%
     \mbk@try@graphic{#1/\mbk@module@cur/#4.pdf}{#3}%
-    \mbk@try@graphic{#1/\mbk@graphicsdir/#4}{#3}%
     \mbk@try@graphic{#1/\mbk@graphicsdir/#4.png}{#3}%
     \mbk@try@graphic{#1/\mbk@graphicsdir/#4.jpg}{#3}%
     \mbk@try@graphic{#1/\mbk@graphicsdir/#4.pdf}{#3}%
+    % These are tried as a last resort
+    \find@in{.}{#4}{%
+        \mbk@try@graphic{#1/\mbk@module@cur/#4}{#3}%
+        \mbk@try@graphic{#1/\mbk@graphicsdir/#4}{#3}%
+        \@gobbletwo
+    }{}%
     \ifstrempty{#2}{}{\mbk@usegraphic#2\@nil{#3}{#4}}%
 }
 \def\mbk@try@graphic#1#2{%
@@ -273,7 +274,7 @@
   \vskip\abovecaptionskip
   \begingroup
       \edfont
-      \sbox\@tempboxa{\textbf{#1}: \emph{#2}}%
+      \sbox\@tempboxa{\textbf{#1}: #2}%
       \ifdim \wd\@tempboxa >\hsize
         \textbf{#1}: #2\par
       \else
@@ -315,7 +316,7 @@
 }
 \def\mbk@module@cur{}
 \let\mbk@current@file\relax
-\def\mbk@module@stack{}
+\def\mbk@module@stack{,}
 \def\mbk@module@push#1{\gpreto\mbk@module@stack{#1,}\edef\mbk@module@cur{#1}}
 \def\mbk@module@pop{%
     \expandafter\mbk@module@pop@\mbk@module@stack\@stop
@@ -360,6 +361,15 @@
 \def\mbk@register@pre#1{%
     \global\@namedef{mbk@preg@#1}{}%
 }
+\ifx\@defaultfamilyhook\@empty
+    \def\@defaultfamilyhook{%
+        \ifedmaterial \edfont \else \readingfont \fi
+    }%
+\else
+    \PackageError{modbook}{%
+        \noexpand\@defaultfamilyhook already defined%
+    }{Check the package}%
+\fi
 \def\mbk@formatting@for#1{%
     \find@try\find@in{%
         {intro-}{\edfont\@gobbletwo}%
@@ -383,8 +393,16 @@
                {\endlist}
 \def\ps@modbook{%
     \let\@oddfoot\@empty\let\@evenfoot\@empty
-    \def\@evenhead{\sffamily\thepage\hfil\textsc{\leftmark}}%
-    \def\@oddhead{\sffamily\rightmark\hfil\thepage}%
+    \def\@evenhead{%
+        {\mbk@page@headerfont{\thepage}}%
+        \hfil
+        {\mbk@left@headerfont{\leftmark}}%
+    }%
+    \def\@oddhead{%
+        {\mbk@right@headerfont{\rightmark}}%
+        \hfil
+        {\mbk@page@headerfont{\thepage}}%
+    }%
     \let\@mkboth\markboth
     \def\chaptermark##1{%
         \markboth{%

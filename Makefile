@@ -1,6 +1,6 @@
 UNAME := $(shell uname)
 
-export TEXINPUTS := .:texmf//:
+export TEXINPUTS := .:./modbook:texmf//:
 
 ifeq ($(shell uname), Darwin)
     STAT=stat -f %m
@@ -10,7 +10,7 @@ endif
 
 TEXCMD = xelatex
 
-
+default: book.pdf
 
 %.pdf: %.tex FORCE
 	$(CHECKSIGNED)
