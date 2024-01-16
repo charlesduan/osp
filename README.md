@@ -106,6 +106,18 @@ The `cduan` directory is provided as an example of editing a module, adding a
 module, and using edited content in a book.
 
 
+### Testing a Module
+
+You can test compilation of a single module with the command:
+```
+make mod-[module]
+```
+This will produce a file `test.pdf` containing the desired module alone.
+
+To improve the appearance of the test compilation file, you can edit
+`template.tex`.
+
+
 ## Bundled Programs
 
 The `bin` directory contains two programs to help with assembling modules.

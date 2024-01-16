@@ -36,5 +36,6 @@ clean:
 
 mod-%: template.tex
 	$(TEXCMD) -jobname=test "\\input template.tex \\import $* \\end{document}"
+	$(TEXCMD) -jobname=test "\\input template.tex \\import $* \\end{document}"
 
 # vim: set noexpandtab:
