@@ -1,0 +1,33 @@
+%
+% This is a template for making a single file into a PDF. It is intended as a
+% barebones document for testing, but you may augment it as desired. In
+% particular, you may wish to set the repository path.
+%
+% To test compilation of a module, run
+%
+%   make mod-[module]
+%
+% to produce the file test.pdf containing your module.
+%
+\documentclass[12pt]{book}
+
+\usepackage{modbook}
+
+% \RepositoryPath{local,base}
+
+\begin{document}
+
+\sloppy
+\frenchspacing
+\raggedbottom
+\hbadness=9999
+
+\tableofcontents
+
+%
+% The following commands will be added by the Makefile:
+%
+% \import [module]
+% \end{document}
+%
+%

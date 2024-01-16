@@ -34,4 +34,7 @@ clean:
 	rm -rf *.glo *.idx *.bcf *.run.xml
 	rm -f out.pdf cover.pdf body.pdf
 
+mod-%: template.tex
+	$(TEXCMD) -jobname=test "\\input template.tex \\import $* \\end{document}"
+
 # vim: set noexpandtab:

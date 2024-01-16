@@ -121,14 +121,19 @@
     \vskip 6pt
     \noindent \textbf{#1\unskip}\par\nobreak
 }
-\def\readinghead#1{%
+\newcommand\readinghead[2][1]{%
     \vskip 6pt
     \begin{centering}
-    \textbf{#1}\par
+    {\@nameuse{mbk@rhead@#1}{#2\par}}%
     \end{centering}
     \nobreak
     \vskip 6pt
 }
+\newcommand\ReadingHeadFont[2]{%
+    \@namedef{mbk@rhead@#1}{#2}%
+}
+\ReadingHeadFont{1}{\bfseries}
+\ReadingHeadFont{1}{\bfseries\itshape}
 \newenvironment{statute}{%
     \stepcounter{statlevel}%
     \readingfont

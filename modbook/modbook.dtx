@@ -43,6 +43,7 @@
 %
 %
 % \changes{v1.0.0}{2014/01/09}{Initial version}
+% \changes{v1.0.1}{2014/01/16}{Improved readinghead}
 %
 % \GetFileInfo{modbook.dtx}
 %
@@ -414,19 +415,37 @@
 }
 %    \end{macrocode}
 %
-% \DescribeMacro\readinghead \marg{text}
+% \DescribeMacro\readinghead \oarg{level} \marg{text}
 %
-% Creates a heading inside a reading.
+% Creates a heading inside a reading. The \meta{level} is a heading
+% level, by default 1.
 %
 %    \begin{macrocode}
-\def\readinghead#1{%
+\newcommand\readinghead[2][1]{%
     \vskip 6pt
     \begin{centering}
-    \textbf{#1}\par
+    {\@nameuse{mbk@rhead@#1}{#2\par}}%
     \end{centering}
     \nobreak
     \vskip 6pt
 }
+%    \end{macrocode}
+%
+%
+% \DescribeMacro\ReadingHeadFont \marg{level} \marg{commands}
+%
+% Provides font and formatting \meta{commands} associated with a heading
+% \meta{level} for |\readinghead|. The commands will be placed inside a group,
+% and the text to be formatted will be given as an argument to the commands.
+%
+% By default, reading heading level 1 is bold, and level 2 is bold italic.
+%
+%    \begin{macrocode}
+\newcommand\ReadingHeadFont[2]{%
+    \@namedef{mbk@rhead@#1}{#2}%
+}
+\ReadingHeadFont{1}{\bfseries}
+\ReadingHeadFont{1}{\bfseries\itshape}
 %    \end{macrocode}
 %
 %

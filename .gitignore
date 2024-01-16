@@ -1,8 +1,11 @@
 local
 docx
+test.*
 *.swo
 *.swp
 *.log
 *.aux
 *.toc
 *.glo
+*.hd
+*.out
