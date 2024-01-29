@@ -432,6 +432,25 @@
     \def\readingmark##1{\markright{##1}}%
 }
 \pagestyle{modbook}
+\def\ps@plain{%
+    \let\@mkboth\@gobbletwo
+    \let\@oddhead\@empty
+    \def\@oddfoot{%
+        \reset@font\hfil
+        {\mbk@page@headerfont{\thepage}}%
+        \hfil
+    }%
+    \let\@evenhead\@empty\let\@evenfoot\@oddfoot
+}
+\def\cleardoublepage{%
+    \clearpage
+    \if@twoside
+        \ifodd\c@page\else
+            \hbox{}\thispagestyle{empty}\newpage
+            \if@twocolumn\hbox{}\newpage\fi
+        \fi
+    \fi
+}
 \setcounter{secnumdepth}{3}
 \setcounter{tocdepth}{4}
 \renewcommand\section{\@startsection {section}{1}{\z@}%
