@@ -375,7 +375,7 @@
 \newcommand\mbk@reading{\@startsection{reading}{4}{\z@}%
                              {3.25ex\@plus 1ex \@minus .2ex}%
                              {1.5ex \@plus .2ex}%
-                             {\centering\normalfont\large\bfseries}}%
+                             {\centering\mbk@section@font\large\bfseries}}%
 \newcommand*\l@reading{\@dottedtocline{4}{5em}{0em}}
 \def\toclevel@reading{4}
 \let\readingmark\@gobble
@@ -603,6 +603,20 @@
     \gdef\mbk@right@headerfont{#3}%
 }
 \HeaderFonts{\sffamily}{\sffamily\scshape}{\sffamily}
+%    \end{macrocode}
+%
+% \DescribeMacro \SectionFont \marg{font}
+%
+% Sets the fonts for section headings. By default, the roman font is used
+% regardless of editorial or reading context. The \meta{font} should require no
+% arguments.
+%
+%    \begin{macrocode}
+\def\SectionFont#1{%
+    \gdef\mbk@section@font{\normalfont#1}%
+}
+\SectionFont{\rmfamily}
+%    \end{macrocode}
 %
 %
 %
@@ -1113,6 +1127,36 @@
 \pagestyle{modbook}
 %    \end{macrocode}
 %
+% Page numbers on plain-styled pages (e.g., beginnings of chapters) are also
+% modified accordingly.
+%
+%    \begin{macrocode}
+\def\ps@plain{%
+    \let\@mkboth\@gobbletwo
+    \let\@oddhead\@empty
+    \def\@oddfoot{%
+        \reset@font\hfil
+        {\mbk@page@headerfont{\thepage}}%
+        \hfil
+    }%
+    \let\@evenhead\@empty\let\@evenfoot\@oddfoot
+}
+%    \end{macrocode}
+%
+% When a chapter ends, a blank page may be inserted on the left side. Ensure
+% that this page has no header.
+%
+%    \begin{macrocode}
+\def\cleardoublepage{%
+    \clearpage
+    \if@twoside
+        \ifodd\c@page\else
+            \hbox{}\thispagestyle{empty}\newpage
+            \if@twocolumn\hbox{}\newpage\fi
+        \fi
+    \fi
+}
+%    \end{macrocode}
 %
 % Readings are section level 4, and paragraphs/subparagraphs are placed below
 % that level. Numbering continues up through level 3 (i.e., readings are not
@@ -1122,25 +1166,25 @@
 \setcounter{secnumdepth}{3}
 \setcounter{tocdepth}{4}
 \renewcommand\section{\@startsection {section}{1}{\z@}%
-                                   {3.5ex \@plus 1ex \@minus .2ex}%
-                                   {2.3ex \@plus.2ex}%
-                                   {\normalfont\raggedright\Large\bfseries}}
+           {3.5ex \@plus 1ex \@minus .2ex}%
+           {2.3ex \@plus.2ex}%
+           {\mbk@section@font\raggedright\Large\bfseries}}
 \renewcommand\subsection{\@startsection{subsection}{2}{\z@}%
-                                     {3.25ex\@plus 1ex \@minus .2ex}%
-                                     {1.5ex \@plus .2ex}%
-                                     {\normalfont\raggedright\large\bfseries}}
+         {3.25ex\@plus 1ex \@minus .2ex}%
+         {1.5ex \@plus .2ex}%
+         {\mbk@section@font\raggedright\large\bfseries}}
 \renewcommand\subsubsection{\@startsection{subsubsection}{3}{\z@}%
-                                     {3.25ex\@plus 1ex \@minus .2ex}%
-                                     {1.5ex \@plus .2ex}%
-                                     {\normalfont\raggedright\large\itshape}}
+         {3.25ex\@plus 1ex \@minus .2ex}%
+         {1.5ex \@plus .2ex}%
+         {\mbk@section@font\raggedright\large\itshape}}
 \renewcommand\paragraph{\@startsection{paragraph}{5}{\parindent}%
-                    {\z@}%
-                    {-1em}%
-                    {\normalsize\bfseries\aftergroup\mbk@parsep}}
+        {\z@}%
+        {-1em}%
+        {\normalsize\bfseries\aftergroup\mbk@parsep}}
 \renewcommand\subparagraph{\@startsection{subparagraph}{6}{\parindent}%
-                                       {3.25ex \@plus1ex \@minus .2ex}%
-                                       {-1em}%
-                                      {\normalfont\normalsize\bfseries}}
+       {3.25ex \@plus1ex \@minus .2ex}%
+       {-1em}%
+      {\normalfont\normalsize\bfseries}}
 \def\mbk@parsep{.}
 \renewcommand*\l@paragraph{\@dottedtocline{5}{10em}{5em}}
 \renewcommand*\l@subparagraph{\@dottedtocline{6}{12em}{6em}}
