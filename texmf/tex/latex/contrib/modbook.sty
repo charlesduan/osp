@@ -457,6 +457,33 @@
 }
 \setcounter{secnumdepth}{3}
 \setcounter{tocdepth}{4}
+\patchcmd\@makechapterhead{\normalfont}{\normalfont\mbk@section@font}{}{%
+    \PackageError{modbook}{Failed to patch \string\@makechapterhead}{}%
+}
+\def\@part[#1]#2{%
+    \ifnum \c@secnumdepth >-2\relax
+      \refstepcounter{part}%
+      \addcontentsline{toc}{part}{\thepart\hspace{1em}#1}%
+    \else
+      \addcontentsline{toc}{part}{#1}%
+    \fi
+    \markboth{}{}%
+    {\centering
+     \interlinepenalty \@M
+     \normalfont\mbk@section@font
+     \ifnum \c@secnumdepth >-2\relax
+       \huge\bfseries \partname\nobreakspace\thepart
+       \par
+       \vskip 20\p@
+     \fi
+     \Huge \bfseries #2\par}%
+    \@endpart}
+\def\@spart#1{%
+    {\centering
+     \interlinepenalty \@M
+     \normalfont\mbk@section@font
+     \Huge \bfseries #1\par}%
+    \@endpart}
 \renewcommand\section{\@startsection {section}{1}{\z@}%
            {3.5ex \@plus 1ex \@minus .2ex}%
            {2.3ex \@plus.2ex}%
