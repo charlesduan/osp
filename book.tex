@@ -13,7 +13,7 @@ Jeremy Sheff, and Rebecca Tushnet}
 %
 % Use the modbook package. See the file code/modbook.pdf for documentation.
 %
-\usepackage{modbook}
+\usepackage[chapternotenums]{modbook}
 
 
 %
@@ -35,6 +35,13 @@ Jeremy Sheff, and Rebecca Tushnet}
 % Sets the fonts for the running headers.
 %
 % \HeaderFonts{\sffamily}{\sffamily\scshape}{\sffamily}
+
+%
+% Make the page margins equal
+%
+\advance\oddsidemargin\evensidemargin
+\divide\oddsidemargin by 2
+\evensidemargin=\oddsidemargin
 
 
 

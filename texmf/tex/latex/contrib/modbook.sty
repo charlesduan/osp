@@ -176,8 +176,8 @@
         \@endparpenalty=\z@
     }%
 }{\endlist}
-\newcounter{qnum}[reading]
-\def\theqnum{\@arabic\c@qnum}
+\newcounter{qnum}[chapter]
+\def\theqnum{\thechapter.\@arabic\c@qnum}
 \def\EditorialFont#1{%
     \gdef\edfont{#1\edmaterialtrue}%
 }

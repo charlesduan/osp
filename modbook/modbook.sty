@@ -159,8 +159,12 @@
         \nobreak
         \vskip 12pt
     }%
-    \list{\arabic{qnum}}{%
-        \usecounter{qnum}%
+    \list{\theqnum}{%
+        \if@chapternotenums
+            \@nmbrlisttrue\def\@listctr{qnum}%
+        \else
+            \usecounter{qnum}%
+        \fi
         \def\makelabel##1{##1.\quad}%
         \itemindent=\parindent
         \itemsep=\parskip
@@ -176,8 +180,11 @@
         \@endparpenalty=\z@
     }%
 }{\endlist}
-\newcounter{qnum}[reading]
-\def\theqnum{\@arabic\c@qnum}
+\newcounter{qnum}[chapter]
+\def\theqnum{%
+    \if@chapternotenums \thechapter.\fi
+    \@arabic\c@qnum
+}
 \def\EditorialFont#1{%
     \gdef\edfont{#1\edmaterialtrue}%
 }
@@ -507,6 +514,11 @@
 \def\mbk@parsep{.}
 \renewcommand*\l@paragraph{\@dottedtocline{5}{10em}{5em}}
 \renewcommand*\l@subparagraph{\@dottedtocline{6}{12em}{6em}}
+\newif\if@chapternotenums
+\DeclareOption{chapternotenums}{\@chapternotenumstrue}
+\DeclareOption{readingnotenums}{\@chapternotenumsfalse}
+\ExecuteOptions{readingnotenums}
+\ProcessOptions
 \endinput
 %%
 %% End of file `modbook.sty'.

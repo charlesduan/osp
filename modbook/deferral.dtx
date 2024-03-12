@@ -1,0 +1,53 @@
+%
+% Provides functions for deferring certain text to a later point in a document,
+% with specified template formatting.
+%
+\ProvidesPackage{deferral}[03/10/2024 Deferred text]
+\RequirePackage{etoolbox}
+%
+% Creates a new deferred text class. \#1 is the name of the class.
+%
+\def\NewDeferral#1{%
+    \global\cslet{dfr@list@#1}\@empty
+    \DeferralSurround{#1}{}{}%
+    \DeferralMacro{#1}{##1}%
+}
+%
+% Sets the text to be placed before and after the deferred text class. \#1 is
+% the deferral class, \#2 the pre-text, \#3 the post-text.
+%
+\def\DeferralSurround#1#2#3{%
+    \global\@namedef{dfr@pre@#1}{#2}%
+    \global\@namedef{dfr@post@#1}{#3}%
+}
+%
+% Defines a macro for processing the deferred matter. \#1 is the deferral class,
+% \#2 is the macro definition (which should use ``\#1'' to reference each
+% deferred item).
+%
+\def\DeferralMacro#1{%
+    \global\@namedef{dfr@mac@#1}##1%
+}
+%
+% Adds an item to the deferral class. \#1 is the deferral class, \#2 the
+% material to add.
+%
+\def\deferral#1#2{%
+    \listcsgadd{dfr@list@#1}{#2}%
+}
+%
+% Uses the deferred matter. \#1 is the deferral class.
+%
+\def\UseDeferral#1{%
+    \expandafter\dfr@use\csname dfr@list@#1\endcsname{#1}%
+}
+\def\dfr@use#1#2{%
+    \ifx#1\@empty\else
+        \forlistloop{\csname dfr@mac@#2\endcsname}{#1}%
+        \global\let#1\@empty
+    \fi
+}
+%
+% TODO: make deferral uses automatic for sections etc.
+%
+\endinput

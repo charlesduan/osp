@@ -1,6 +1,6 @@
 % \iffalse meta-comment
 %
-% Copyright 2014 Charles Duan <cduan@wcl.american.edu>
+% Copyright 2024 Charles Duan <cduan@wcl.american.edu>
 %
 % This program is free software: you can redistribute it and/or modify it under
 % the terms of the GNU General Public License as published by the Free Software
@@ -24,7 +24,7 @@
 %<package>\NeedsTeXFormat{LaTeX2e}
 %<package>\ProvidesPackage{modbook}
 %<*package>
-    [2024/01/09 v1.0.0 Module-based textbook]
+    [2024/01/09 v1.0.2 Module-based textbook]
 %</package>
 %<*driver>
 \documentclass{ltxdoc}
@@ -41,9 +41,11 @@
 %</driver>
 % \fi
 %
+%<*package>
 %
-% \changes{v1.0.0}{2014/01/09}{Initial version}
-% \changes{v1.0.1}{2014/01/16}{Improved readinghead}
+% \changes{v1.0.0}{2024/01/09}{Initial version}
+% \changes{v1.0.1}{2024/01/16}{Improved readinghead}
+% \changes{v1.0.2}{2024/03/12}{Adding deferrals and multiple choice}
 %
 % \GetFileInfo{modbook.dtx}
 %
@@ -507,8 +509,12 @@
         \nobreak
         \vskip 12pt
     }%
-    \list{\arabic{qnum}}{%
-        \usecounter{qnum}%
+    \list{\theqnum}{%
+        \if@chapternotenums
+            \@nmbrlisttrue\def\@listctr{qnum}%
+        \else
+            \usecounter{qnum}%
+        \fi
         \def\makelabel##1{##1.\quad}%
         \itemindent=\parindent
         \itemsep=\parskip
@@ -524,8 +530,11 @@
         \@endparpenalty=\z@
     }%
 }{\endlist}
-\newcounter{qnum}[reading]
-\def\theqnum{\@arabic\c@qnum}
+\newcounter{qnum}[chapter]
+\def\theqnum{%
+    \if@chapternotenums \thechapter.\fi
+    \@arabic\c@qnum
+}
 %    \end{macrocode}
 %
 %
@@ -1219,9 +1228,89 @@
 %
 %
 %
+% \section{Options}
+%
+% With the option |readingnotenums|, numbering will not contain chapter numbers
+% and will be consecutive for each block of notes (as is traditional in
+% casebooks).
+%
+% With the option |chapternotenums|, reading notes will be of the form
+% \meta{chapter}.\meta{note} and will run consecutively through the chapter. So
+% if the first reading of chapter 7 has four notes, then the first note of the
+% second reading will be 7.5. This is probably better for cross-referencing
+% notes throughout the book, since the notes are uniquely identified.
+%
+%    \begin{macrocode}
+\newif\if@chapternotenums
+\DeclareOption{chapternotenums}{\@chapternotenumstrue}
+\DeclareOption{readingnotenums}{\@chapternotenumsfalse}
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\ExecuteOptions{readingnotenums}
+\ProcessOptions
+%    \end{macrocode}
+%
+%</package>
 %
 %
+%<*deferral>
 %
+%
+% \section{Deferrals}
+%
+% Provides functions for deferring certain text to a later point in a document,
+% with specified template formatting.
+%
+\ProvidesPackage{deferral}[03/10/2024 Deferred text]
+\RequirePackage{etoolbox}
+%
+% Creates a new deferred text class. \#1 is the name of the class.
+%
+\def\NewDeferral#1{%
+    \global\cslet{dfr@list@#1}\@empty
+    \DeferralSurround{#1}{}{}%
+    \DeferralMacro{#1}{##1}%
+}
+%
+% Sets the text to be placed before and after the deferred text class. \#1 is
+% the deferral class, \#2 the pre-text, \#3 the post-text.
+%
+\def\DeferralSurround#1#2#3{%
+    \global\@namedef{dfr@pre@#1}{#2}%
+    \global\@namedef{dfr@post@#1}{#3}%
+}
+%
+% Defines a macro for processing the deferred matter. \#1 is the deferral class,
+% \#2 is the macro definition (which should use ``\#1'' to reference each
+% deferred item).
+%
+\def\DeferralMacro#1{%
+    \global\@namedef{dfr@mac@#1}##1%
+}
+%
+% Adds an item to the deferral class. \#1 is the deferral class, \#2 the
+% material to add.
+%
+\def\deferral#1#2{%
+    \listcsgadd{dfr@list@#1}{#2}%
+}
+%
+% Uses the deferred matter. \#1 is the deferral class.
+%
+\def\UseDeferral#1{%
+    \expandafter\dfr@use\csname dfr@list@#1\endcsname{#1}%
+}
+\def\dfr@use#1#2{%
+    \ifx#1\@empty\else
+        \forlistloop{\csname dfr@mac@#2\endcsname}{#1}%
+        \global\let#1\@empty
+    \fi
+}
+%
+% TODO: make deferral uses automatic for sections etc.
+%
+%</deferral>
 %
 %
 % \Finale
