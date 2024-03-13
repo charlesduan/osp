@@ -12,7 +12,8 @@ modbook.sty: modbook.ins modbook.dtx
 	latex modbook.ins
 
 install: modbook.sty
-	cp -f modbook.sty ../texmf/tex/latex/contrib
+	cp -f modbook.sty deferral.sty multichoice.sty \
+		../texmf/tex/latex/contrib
 
 %.pdf: %.dtx
 	export SOURCE_DATE_EPOCH=`$(STAT) "$<"`; \

@@ -25,10 +25,11 @@
 %% 
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{modbook}
-    [2024/01/09 v1.0.0 Module-based textbook]
+    [2024/01/09 v1.0.2 Module-based textbook]
 \RequirePackage{etoolbox}
 \RequirePackage{strings}
 \RequirePackage{graphicx}
+\RequirePackage[deferqs]{multichoice}
 \RequirePackage[hyperfootnotes=false,hidelinks,linktoc=all,bookmarks=false]{hyperref}
 \RequirePackage[journalfonts,italcase,linkurl]{hicite}
 \newcommand\RepositoryPath[1]{\def\mbk@repo@path{#1}}
@@ -159,8 +160,12 @@
         \nobreak
         \vskip 12pt
     }%
-    \list{\arabic{qnum}}{%
-        \usecounter{qnum}%
+    \list{\theqnum}{%
+        \if@chapternotenums
+            \@nmbrlisttrue\def\@listctr{qnum}%
+        \else
+            \usecounter{qnum}%
+        \fi
         \def\makelabel##1{##1.\quad}%
         \itemindent=\parindent
         \itemsep=\parskip
@@ -177,7 +182,10 @@
     }%
 }{\endlist}
 \newcounter{qnum}[chapter]
-\def\theqnum{\thechapter.\@arabic\c@qnum}
+\def\theqnum{%
+    \if@chapternotenums \thechapter.\fi
+    \@arabic\c@qnum
+}
 \def\EditorialFont#1{%
     \gdef\edfont{#1\edmaterialtrue}%
 }
@@ -294,6 +302,15 @@
   \vskip\belowcaptionskip}
 \def\GraphicsDirectory#1{\gdef\mbk@graphicsdir{#1}}
 \GraphicsDirectory{images}
+\DeferralSurround{mch@questions}{%
+    \edfont
+    \protected@edef\reserved@a{%
+        \noexpand\deferral{mch@answers}{%
+            \noexpand\section*{Chapter \thechapter}%
+        }%
+    }\reserved@a
+    \begin{questions}[Questions (Answers in the back of the book)]%
+}{\end{questions}}
 \def\mbk@import@newmod#1#2{%
     \mbk@try@modfile{#1}{#2}%
     \mbk@try@file@default
@@ -507,6 +524,11 @@
 \def\mbk@parsep{.}
 \renewcommand*\l@paragraph{\@dottedtocline{5}{10em}{5em}}
 \renewcommand*\l@subparagraph{\@dottedtocline{6}{12em}{6em}}
+\newif\if@chapternotenums
+\DeclareOption{chapternotenums}{\@chapternotenumstrue}
+\DeclareOption{readingnotenums}{\@chapternotenumsfalse}
+\ExecuteOptions{readingnotenums}
+\ProcessOptions
 \endinput
 %%
 %% End of file `modbook.sty'.
