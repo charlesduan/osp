@@ -39,9 +39,9 @@
     \PrintChanges
 \end{document}
 %</driver>
+%<*package>
 % \fi
 %
-%<*package>
 %
 % \changes{v1.0.0}{2024/01/09}{Initial version}
 % \changes{v1.0.1}{2024/01/16}{Improved readinghead}
@@ -116,6 +116,7 @@
 \RequirePackage{etoolbox}
 \RequirePackage{strings}
 \RequirePackage{graphicx}
+\RequirePackage[deferqs]{multichoice}
 \RequirePackage[hyperfootnotes=false,hidelinks,linktoc=all,bookmarks=false]{hyperref}
 \RequirePackage[journalfonts,italcase,linkurl]{hicite}
 %    \end{macrocode}
@@ -843,6 +844,26 @@
 %
 %
 %
+% \subsection{Multiple Choice Questions}
+%
+% The |multichoice| question is included in this package, with question deferral
+% turned on. This enables adding multiple choice questions throughout the text,
+% with all the questions for a chapter being displayed at the end for example.
+%
+%
+% Questions will be displayed in a manner consistent with the rest of the book.
+%
+%    \begin{macrocode}
+\DeferralSurround{mch@questions}{%
+    \edfont
+    \protected@edef\reserved@a{%
+        \noexpand\deferral{mch@answers}{%
+            \noexpand\section*{Chapter \thechapter}%
+        }%
+    }\reserved@a
+    \begin{questions}[Questions (Answers in the back of the book)]%
+}{\end{questions}}
+%
 %
 %
 %
@@ -1250,72 +1271,296 @@
 \DeclareOption{readingnotenums}{\@chapternotenumsfalse}
 %    \end{macrocode}
 %
+% By default, |readingnotenums| is used.
+%
 %    \begin{macrocode}
 \ExecuteOptions{readingnotenums}
 \ProcessOptions
 %    \end{macrocode}
 %
+%
+%
+% \section{Supporting Packages}
+%
+% \iffalse
 %</package>
-%
-%
 %<*deferral>
+% \fi
 %
 %
-% \section{Deferrals}
+% \subsection{Deferrals}
 %
 % Provides functions for deferring certain text to a later point in a document,
 % with specified template formatting.
 %
+% With this package, one defines one or more ``deferral classes'' by name. The
+% user adds items to a deferral class, and then may use the deferral class by
+% printing it out. Upon printing, the items of the deferral class can be altered
+% by a per-item macro, and the deferral class can surround all the items with
+% text such as environment |\begin| and |\end| commands.
+%
+%    \begin{macrocode}
 \ProvidesPackage{deferral}[03/10/2024 Deferred text]
 \RequirePackage{etoolbox}
+%    \end{macrocode}
+%
+% \DescribeMacro\NewDeferral\marg{class-name}
 %
 % Creates a new deferred text class. \#1 is the name of the class.
 %
+%    \begin{macrocode}
 \def\NewDeferral#1{%
     \global\cslet{dfr@list@#1}\@empty
     \DeferralSurround{#1}{}{}%
     \DeferralMacro{#1}{##1}%
 }
+%    \end{macrocode}
 %
-% Sets the text to be placed before and after the deferred text class. \#1 is
-% the deferral class, \#2 the pre-text, \#3 the post-text.
+% \DescribeMacro\DeferralSurround \marg{class}\marg{pre-text}\marg{post-text}
 %
+% Sets the text to be placed before and after the deferred text class when it is
+% displayed.
+%
+%    \begin{macrocode}
 \def\DeferralSurround#1#2#3{%
     \global\@namedef{dfr@pre@#1}{#2}%
     \global\@namedef{dfr@post@#1}{#3}%
 }
+%    \end{macrocode}
 %
-% Defines a macro for processing the deferred matter. \#1 is the deferral class,
-% \#2 is the macro definition (which should use ``\#1'' to reference each
-% deferred item).
+% \DescribeMacro\DeferralMacro\marg{class}\marg{macro-def}
 %
+% Defines a macro for processing the deferred matter.
+% The \meta{macro-def} is the macro definition, which should use ``\#1'' to
+% reference each deferred item.
+%
+%    \begin{macrocode}
 \def\DeferralMacro#1{%
     \global\@namedef{dfr@mac@#1}##1%
 }
+%    \end{macrocode}
 %
-% Adds an item to the deferral class. \#1 is the deferral class, \#2 the
-% material to add.
+% \DescribeMacro\deferral\marg{class}\marg{text}
 %
+% Adds an item \meta{text} to the deferral class.
+%
+%    \begin{macrocode}
 \def\deferral#1#2{%
     \listcsgadd{dfr@list@#1}{#2}%
 }
+%    \end{macrocode}
 %
-% Uses the deferred matter. \#1 is the deferral class.
+% \DescribeMacro\UseDeferral\marg{class}
 %
+% Uses the deferred matter. This will (1) print the class pre-text, (2) run the
+% class macro on each item, and (3) print the class post-text. The deferred
+% matter will then be cleared. If there are no deferred items for this class,
+% then nothing is produced at all (not even the pre- and post-text).
+%
+%    \begin{macrocode}
 \def\UseDeferral#1{%
     \expandafter\dfr@use\csname dfr@list@#1\endcsname{#1}%
 }
 \def\dfr@use#1#2{%
     \ifx#1\@empty\else
+        \csname dfr@pre@#2\endcsname
         \forlistloop{\csname dfr@mac@#2\endcsname}{#1}%
+        \csname dfr@post@#2\endcsname
         \global\let#1\@empty
     \fi
 }
+%    \end{macrocode}
 %
-% TODO: make deferral uses automatic for sections etc.
-%
+% \iffalse
 %</deferral>
+%<*multichoice>
+% \fi
 %
+% \subsection{Multiple Choice Questions}
+%
+% This package provides support for multiple choice question formatting. It
+% depends on the deferral package.
+%
+% A multiple choice question consists of a question text, a list of choices, an
+% answer, and an explanation. The answer and explanation are stored in
+% deferrals, while the question is formatted as a list item, with the choices
+% formatted within a list environment.
+%
+%    \begin{macrocode}
+\ProvidesPackage{multichoice}[2024/03/10 Multiple choice questions]
+\RequirePackage{deferral}
+%    \end{macrocode}
+%
+%
+%
+% \DescribeMacro\multichoiceq \marg{question}\marg{choices}\marg{answer}%
+% \marg{explanation}
+%
+% Formats a multiple choice question. The assumption is that this macro is
+% called within some sort of list, such that each question can be preceded with
+% an |\item| command.
+%
+% If the |deferqs| option was selected (see below), then questions will be
+% placed in a deferral.
+%
+%    \begin{macrocode}
+\def\multichoiceq#1#2#3#4{%
+    \if@mch@deferqs
+        \deferral{mch@questions}{\mch@multichoiceq{#1}{#2}{#3}{#4}}%
+    \else
+        \mch@multichoiceq{#1}{#2}{#3}{#4}%
+    \fi
+}
+\def\mch@multichoiceq#1#2#3#4{%
+    \item
+    \expandafter\mch@deferrals\expandafter{\@currentlabel}{#3}{#4}%
+    #1
+    \begin{choices}#2\end{choices}%
+}
+\NewDeferral{mch@questions}
+%    \end{macrocode}
+%
+% Saves the current question number, the correct answer, and the question to
+% deferrals. Two deferrals are stored: an answer key that just contains the
+% question number and correct answer, and an explanation key that also includes
+% the explanation. \#1 is the question number,
+% \#2 the correct answer, \#3 the explanation.
+%
+%    \begin{macrocode}
+\def\mch@deferrals#1#2#3{%
+    \deferral{mch@key}{\item[#1.] #2}%
+    \deferral{mch@answers}{\multichoicea{#1}{#2}{#3}}%
+}
+\NewDeferral{mch@key}
+\NewDeferral{mch@answers}
+%    \end{macrocode}
+%
+%
+%
+% \DescribeMacro\showquestions
+% If questions are placed in a deferral, then this command will display the
+% questions. By default, they will be placed in a |multichoice| environment. To
+% change this, run |\DeferralSurround{mch@questions}|.
+%
+%    \begin{macrocode}
+\def\showquestions{\UseDeferral{mch@questions}}
+\DeferralSurround{mch@questions}{\begin{multichoice}}{\end{multichoice}}
+%    \end{macrocode}
+%
+%
+% \DescribeMacro\multichoiceitem\marg{label}\marg{text}
+%
+% Displays one of the choices to a multiple choice question. The assumption is
+% that this occurs within a list environment (a choices environment in view of
+% the definition of |\multichoiceq|).
+%
+% The \meta{label} should be the letter of the answer choice. It will be
+% parenthesized by the macro.
+%
+%    \begin{macrocode}
+\def\multichoiceitem#1#2{%
+    \item[(#1)] #2%
+}
+%    \end{macrocode}
+%
+% \DescribeEnv{choices}
+% An environment for multiple choice question choices. This environment will be
+% invoked automatically by |\multichoiceq|.
+%
+%    \begin{macrocode}
+\def\choices{%
+    \list{%
+        \PackageError{multichoice}{Choice item cannot be implicit}{%
+            Ensure you are using \string\multichoiceitem
+        }%
+    }{%
+        \def\makelabel##1{##1\hss}%
+        \leftmargin=4em\relax
+        \itemsep=\z@
+        \samepage
+    }%
+}
+\let\endchoices\endlist
+%    \end{macrocode}
+%
+% \DescribeMacro\multichoicea\marg{number}\marg{answer}\marg{explanation}
+%
+% Display an answer. The assumption is that this is inside a list environment so
+% |\item| can be used; the question number will be given as the item.
+%
+% This macro will automatically be invoked by |\multichoiceq|, but it may be
+% redefined to provide for alternate formatting of answers.
+%
+%    \begin{macrocode}
+\def\multichoicea#1#2#3{%
+    \item[#1] \textbf{#2.}\quad#3%
+}
+%    \end{macrocode}
+%
+% \DescribeMacro\answerkey
+% Produce the answer key.
+%
+%    \begin{macrocode}
+\def\answerkey{\UseDeferral{mch@key}}
+%    \end{macrocode}
+%
+% \DescribeMacro\explanations
+% Produce the explanations.
+%
+%    \begin{macrocode}
+\def\explanations{\UseDeferral{mch@answers}}
+%    \end{macrocode}
+%
+% \DescribeEnv{multichoice}
+% An environment for questions and answers. This environment is not required for
+% use; |\multichoiceq| will work with a standard enumerate environment. However,
+% it provides formatting that generally looks preferable for text-heavy multiple
+% choice questions.
+%
+%    \begin{macrocode}
+\newcounter{mcnum}
+\def\themcnum{\@arabic\c@mcnum}
+\newenvironment{multichoice}{%
+    \list{\arabic{mcnum}}{%
+        \usecounter{mcnum}%
+        \def\makelabel##1{\textbf{##1.}\quad}%
+        \itemindent=\z@
+        \itemsep=\baselineskip
+        \labelsep=\z@
+        \labelwidth=\z@
+        \leftmargin=\z@
+        \listparindent=\parindent
+        \parsep=\parskip
+        \partopsep=\z@
+        \topsep=\z@
+        \@beginparpenalty=\@M
+        \@itempenalty=\z@
+        \@endparpenalty=\z@
+    }%
+}{\endlist}
+%    \end{macrocode}
+%
+%
+%
+% The option |deferqs| will place all questions into a deferral for later
+% printing. The option |immediateqs| will display questions immediately.
+%
+%    \begin{macrocode}
+\newif\if@mch@deferqs
+\DeclareOption{deferqs}{\@mch@deferqstrue}
+\DeclareOption{immediateqs}{\@mch@deferqsfalse}
+%    \end{macrocode}
+%
+% By default, questions are displayed immediately.
+%
+%    \begin{macrocode}
+\ExecuteOptions{immediateqs}
+\ProcessOptions
+%    \end{macrocode}
+%
+% \iffalse
+%</multichoice>
+% \fi
 %
 % \Finale
 %

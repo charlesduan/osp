@@ -25,10 +25,11 @@
 %% 
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{modbook}
-    [2024/01/09 v1.0.0 Module-based textbook]
+    [2024/01/09 v1.0.2 Module-based textbook]
 \RequirePackage{etoolbox}
 \RequirePackage{strings}
 \RequirePackage{graphicx}
+\RequirePackage[deferqs]{multichoice}
 \RequirePackage[hyperfootnotes=false,hidelinks,linktoc=all,bookmarks=false]{hyperref}
 \RequirePackage[journalfonts,italcase,linkurl]{hicite}
 \newcommand\RepositoryPath[1]{\def\mbk@repo@path{#1}}
@@ -301,6 +302,15 @@
   \vskip\belowcaptionskip}
 \def\GraphicsDirectory#1{\gdef\mbk@graphicsdir{#1}}
 \GraphicsDirectory{images}
+\DeferralSurround{mch@questions}{%
+    \edfont
+    \protected@edef\reserved@a{%
+        \noexpand\deferral{mch@answers}{%
+            \noexpand\section*{Chapter \thechapter}%
+        }%
+    }\reserved@a
+    \begin{questions}[Questions (Answers in the back of the book)]%
+}{\end{questions}}
 \def\mbk@import@newmod#1#2{%
     \mbk@try@modfile{#1}{#2}%
     \mbk@try@file@default
