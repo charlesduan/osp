@@ -1259,7 +1259,7 @@
 % and will be consecutive for each block of notes (as is traditional in
 % casebooks).
 %
-% With the option |chapternotenums|, reading notes will be of the form
+% With the option |chapternotenums|, notes will have the form
 % \meta{chapter}.\meta{note} and will run consecutively through the chapter. So
 % if the first reading of chapter 7 has four notes, then the first note of the
 % second reading will be 7.5. This is probably better for cross-referencing
@@ -1379,12 +1379,72 @@
 % \subsection{Multiple Choice Questions}
 %
 % This package provides support for multiple choice question formatting. It
-% depends on the deferral package.
+% depends on the deferral package. It may be used independently of |modbook|.
 %
 % A multiple choice question consists of a question text, a list of choices, an
 % answer, and an explanation. The answer and explanation are stored in
 % deferrals, while the question is formatted as a list item, with the choices
 % formatted within a list environment.
+%
+% The package should be bundled with a script called |multichoice.rb|, which can
+% be used to aid in writing multiple choice questions. To use the script,
+% prepare a file of the form:
+% \begin{quote}
+% |Question: | \meta{question-text}
+%
+% |A: | \meta{choice-text}
+%
+% |B: | \meta{choice-text}
+%
+% \ldots
+%
+% |Answer: | \meta{correct-choice}|. | \meta{explanation}
+%
+% \relax[\emph{More questions may follow}]
+% \end{quote}
+% The file should be \TeX-formatted (and may use \LaTeX\ commands), with
+% paragraphs separated by a blank line and starting with a word followed by a
+% colon. Answer choices must be a single letter; the other permissible words
+% before a comma are ``Question'' and ``Answer''. For example:
+% \begin{verbatim}
+% Question: What is 1 + 1?
+%
+% A: 2
+%
+% B: 15
+%
+% C: 10 in binary
+%
+% D: (A) and (C)
+%
+% E: All of the above
+%
+% Answer: D. The sum of one and one is typically represented with
+% the digit 2 in the decimal system, but is also 10 in binary as
+% specified in (C). Fifteen (B) is plainly incorrect.
+% \end{verbatim}
+% The answer choices and the explanation may cross-reference other
+% answer choices using letters in parentheses. Phrases like ``all of the above''
+% or ``none of the above'' will also be identified as cross-referencing other
+% choices. If an answer choice cross-references other choices, it \emph{must}
+% follow other non-cross-referencing choices and \emph{must only}
+% cross-reference choices presented before it.
+% 
+% Running the |multichoice.rb| script on this file will:
+% \begin{itemize}
+% \item Randomize the order of the choices. The cross-referencing choices will
+% not be rearranged, but the others will.
+%
+% \item Update the correct answer, and all the cross-references, to reflect the
+% randomized order of the choices. Parenthesized letters in the choices and
+% explanation are replaced, and phrases of the form ``(A) and (B)'' and ``(C),
+% (D), or (E)'' are automatically sorted to reflect the new choice order.
+%
+% \item Format the question using the |\multichoiceq| commmand below.
+% \end{itemize}
+% The resulting output file can then be used as a \LaTeX\ input file after the
+% |multichoice| package is loaded.
+%
 %
 %    \begin{macrocode}
 \ProvidesPackage{multichoice}[2024/03/10 Multiple choice questions]

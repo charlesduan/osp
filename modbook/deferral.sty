@@ -1,0 +1,56 @@
+%%
+%% This is file `deferral.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% modbook.dtx  (with options: `deferral')
+%% 
+%% This is a generated file.
+%% 
+%% Copyright 2014 Charles Duan <cduan@wcl.american.edu>
+%% 
+%% This program is free software: you can redistribute it and/or modify it under
+%% the terms of the GNU General Public License as published by the Free Software
+%% Foundation, either version 3 of the License, or (at your option) any later
+%% version.
+%% 
+%% This program is distributed in the hope that it will be useful, but WITHOUT
+%% ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+%% FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+%% details.
+%% 
+%% You should have received a copy of the GNU General Public License along with
+%% this program. If not, see <https://www.gnu.org/licenses/>.
+%% 
+\ProvidesPackage{deferral}[03/10/2024 Deferred text]
+\RequirePackage{etoolbox}
+\def\NewDeferral#1{%
+    \global\cslet{dfr@list@#1}\@empty
+    \DeferralSurround{#1}{}{}%
+    \DeferralMacro{#1}{##1}%
+}
+\def\DeferralSurround#1#2#3{%
+    \global\@namedef{dfr@pre@#1}{#2}%
+    \global\@namedef{dfr@post@#1}{#3}%
+}
+\def\DeferralMacro#1{%
+    \global\@namedef{dfr@mac@#1}##1%
+}
+\def\deferral#1#2{%
+    \listcsgadd{dfr@list@#1}{#2}%
+}
+\def\UseDeferral#1{%
+    \expandafter\dfr@use\csname dfr@list@#1\endcsname{#1}%
+}
+\def\dfr@use#1#2{%
+    \ifx#1\@empty\else
+        \csname dfr@pre@#2\endcsname
+        \forlistloop{\csname dfr@mac@#2\endcsname}{#1}%
+        \csname dfr@post@#2\endcsname
+        \global\let#1\@empty
+    \fi
+}
+\endinput
+%%
+%% End of file `deferral.sty'.
