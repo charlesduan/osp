@@ -1,0 +1,98 @@
+%%
+%% This is file `multichoice.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% modbook.dtx  (with options: `multichoice')
+%% 
+%% This is a generated file.
+%% 
+%% Copyright 2014 Charles Duan <cduan@wcl.american.edu>
+%% 
+%% This program is free software: you can redistribute it and/or modify it under
+%% the terms of the GNU General Public License as published by the Free Software
+%% Foundation, either version 3 of the License, or (at your option) any later
+%% version.
+%% 
+%% This program is distributed in the hope that it will be useful, but WITHOUT
+%% ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+%% FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+%% details.
+%% 
+%% You should have received a copy of the GNU General Public License along with
+%% this program. If not, see <https://www.gnu.org/licenses/>.
+%% 
+\ProvidesPackage{multichoice}[2024/03/10 Multiple choice questions]
+\RequirePackage{deferral}
+\def\multichoiceq#1#2#3#4{%
+    \if@mch@deferqs
+        \deferral{mch@questions}{\mch@multichoiceq{#1}{#2}{#3}{#4}}%
+    \else
+        \mch@multichoiceq{#1}{#2}{#3}{#4}%
+    \fi
+}
+\def\mch@multichoiceq#1#2#3#4{%
+    \item
+    \expandafter\mch@deferrals\expandafter{\@currentlabel}{#3}{#4}%
+    #1
+    \begin{choices}#2\end{choices}%
+}
+\NewDeferral{mch@questions}
+\def\mch@deferrals#1#2#3{%
+    \deferral{mch@key}{\item[#1.] #2}%
+    \deferral{mch@answers}{\multichoicea{#1}{#2}{#3}}%
+}
+\NewDeferral{mch@key}
+\NewDeferral{mch@answers}
+\def\showquestions{\UseDeferral{mch@questions}}
+\DeferralSurround{mch@questions}{\begin{multichoice}}{\end{multichoice}}
+\def\multichoiceitem#1#2{%
+    \item[(#1)] #2%
+}
+\def\choices{%
+    \list{%
+        \PackageError{multichoice}{Choice item cannot be implicit}{%
+            Ensure you are using \string\multichoiceitem
+        }%
+    }{%
+        \def\makelabel##1{##1\hss}%
+        \leftmargin=4em\relax
+        \itemsep=\z@
+        \samepage
+    }%
+}
+\let\endchoices\endlist
+\def\multichoicea#1#2#3{%
+    \item[#1] \textbf{#2.}\quad#3%
+}
+\def\answerkey{\UseDeferral{mch@key}}
+\def\explanations{\UseDeferral{mch@answers}}
+\newcounter{mcnum}
+\def\themcnum{\@arabic\c@mcnum}
+\newenvironment{multichoice}{%
+    \list{\arabic{mcnum}}{%
+        \usecounter{mcnum}%
+        \def\makelabel##1{\textbf{##1.}\quad}%
+        \itemindent=\z@
+        \itemsep=\baselineskip
+        \labelsep=\z@
+        \labelwidth=\z@
+        \leftmargin=\z@
+        \listparindent=\parindent
+        \parsep=\parskip
+        \partopsep=\z@
+        \topsep=\z@
+        \@beginparpenalty=\@M
+        \@itempenalty=\z@
+        \@endparpenalty=\z@
+    }%
+}{\endlist}
+\newif\if@mch@deferqs
+\DeclareOption{deferqs}{\@mch@deferqstrue}
+\DeclareOption{immediateqs}{\@mch@deferqsfalse}
+\ExecuteOptions{immediateqs}
+\ProcessOptions
+\endinput
+%%
+%% End of file `multichoice.sty'.
