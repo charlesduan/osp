@@ -520,10 +520,8 @@
         \else
             \usecounter{qnum}%
         \fi
-        \def\makelabel##1{##1.\quad}%
-        \itemindent=\parindent
+        \def\makelabel##1{##1.}%
         \itemsep=\parskip
-        \labelsep=\z@
         \labelwidth=\z@
         \leftmargin=\z@
         \listparindent=\parindent
@@ -533,6 +531,10 @@
         \@beginparpenalty=\@M
         \@itempenalty=\z@
         \@endparpenalty=\z@
+        \itemindent=\parindent
+        % For some reason, LaTeX deducts the \labelsep from the left margin of
+        % the label, so it is added back here.
+        \itemindent=\dimexpr \labelsep + \parindent \relax
     }%
 }{\endlist}
 \newcounter{qnum}[chapter]
