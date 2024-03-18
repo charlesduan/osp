@@ -908,7 +908,7 @@
 %
 %    \begin{macrocode}
 \def\mbk@import@nomod#1{%
-    \mbk@try@modfile{\mbk@module@cur}{#1}%
+    \expandafter\mbk@try@modfile\expandafter{\mbk@module@cur}{#1}%
     \mbk@try@modfile{#1}{#1}%
     \mbk@try@file@default
     \PackageError{modbook}{No file `#1.tex' found}{Check that the file exists}%
@@ -926,13 +926,12 @@
 }
 \def\mbk@try@modfile@#1,#2\@nil#3#4{%
     \mbk@try@file{#1/#3/#4}{%
-        \mbk@module@push{#3}%
-        \mbk@register@file{#3}{#4}%
-        \def\mbk@current@file{#4}%
+        \mbk@register@file{#3}{#4}% Precedes setting of \mbk@current@file
+        \mbk@push{#3}{#4}%
         \mbk@formatting@for{#4}%
         \@@input #1/#3/#4 %
         \ifx\mbk@module@cur\mbk@current@file \ModuleEndHook \fi
-        \mbk@module@pop
+        \mbk@pop
     }%
     \ifstrempty{#2}{}{\mbk@try@modfile@#2\@nil{#3}{#4}}%
 }
@@ -958,19 +957,24 @@
 %    \end{macrocode}
 %
 % \DescribeMacro\mbk@module@stack
-% The stack of module inclusions. The list is comma-separated and always ends in
-% a comma.
+% The stack of module inclusions. The list is composed of pairs of groups, the
+% first being the module and the second being the file. An empty module/file
+% pair is included at the end.
 %
 %    \begin{macrocode}
-\def\mbk@module@stack{,}
+\def\mbk@module@stack{{}{}}
 %    \end{macrocode}
 %
-% \DescribeMacro\mbk@module@push \marg{module}
+% \DescribeMacro\mbk@push \marg{module} \marg{file}
 %
 % Push a module onto the stack.
 %
 %    \begin{macrocode}
-\def\mbk@module@push#1{\gpreto\mbk@module@stack{#1,}\edef\mbk@module@cur{#1}}
+\def\mbk@push#1#2{%
+    \gpreto\mbk@module@stack{{#1}{#2}}
+    \edef\mbk@module@cur{#1}%
+    \def\mbk@current@file{#2}%
+}
 %    \end{macrocode}
 %
 %
@@ -980,12 +984,13 @@
 % commas).
 %
 %    \begin{macrocode}
-\def\mbk@module@pop{%
-    \expandafter\mbk@module@pop@\mbk@module@stack\@stop
+\def\mbk@pop{%
+    \expandafter\mbk@pop@\mbk@module@stack\@stop
 }
-\def\mbk@module@pop@#1,#2,#3\@stop{%
-    \gdef\mbk@module@stack{#2,#3}%
-    \gdef\mbk@module@cur{#2}%
+\def\mbk@pop@#1#2#3#4#5\@stop{%
+    \gdef\mbk@module@stack{{#3}{#4}#5}%
+    \gdef\mbk@module@cur{#3}%
+    \gdef\mbk@current@file{#4}%
 }
 %    \end{macrocode}
 %

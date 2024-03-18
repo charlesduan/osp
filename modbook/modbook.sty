@@ -322,7 +322,7 @@
     \mbk@try@file@end
 }
 \def\mbk@import@nomod#1{%
-    \mbk@try@modfile{\mbk@module@cur}{#1}%
+    \expandafter\mbk@try@modfile\expandafter{\mbk@module@cur}{#1}%
     \mbk@try@modfile{#1}{#1}%
     \mbk@try@file@default
     \PackageError{modbook}{No file `#1.tex' found}{Check that the file exists}%
@@ -333,26 +333,30 @@
 }
 \def\mbk@try@modfile@#1,#2\@nil#3#4{%
     \mbk@try@file{#1/#3/#4}{%
-        \mbk@module@push{#3}%
-        \mbk@register@file{#3}{#4}%
-        \def\mbk@current@file{#4}%
+        \mbk@register@file{#3}{#4}% Precedes setting of \mbk@current@file
+        \mbk@push{#3}{#4}%
         \mbk@formatting@for{#4}%
         \@@input #1/#3/#4 %
         \ifx\mbk@module@cur\mbk@current@file \ModuleEndHook \fi
-        \mbk@module@pop
+        \mbk@pop
     }%
     \ifstrempty{#2}{}{\mbk@try@modfile@#2\@nil{#3}{#4}}%
 }
 \def\mbk@module@cur{}
 \let\mbk@current@file\relax
-\def\mbk@module@stack{,}
-\def\mbk@module@push#1{\gpreto\mbk@module@stack{#1,}\edef\mbk@module@cur{#1}}
-\def\mbk@module@pop{%
-    \expandafter\mbk@module@pop@\mbk@module@stack\@stop
+\def\mbk@module@stack{{}{}}
+\def\mbk@push#1#2{%
+    \gpreto\mbk@module@stack{{#1}{#2}}
+    \edef\mbk@module@cur{#1}%
+    \def\mbk@current@file{#2}%
 }
-\def\mbk@module@pop@#1,#2,#3\@stop{%
-    \gdef\mbk@module@stack{#2,#3}%
-    \gdef\mbk@module@cur{#2}%
+\def\mbk@pop{%
+    \expandafter\mbk@pop@\mbk@module@stack\@stop
+}
+\def\mbk@pop@#1#2#3#4#5\@stop{%
+    \gdef\mbk@module@stack{{#3}{#4}#5}%
+    \gdef\mbk@module@cur{#3}%
+    \gdef\mbk@current@file{#4}%
 }
 \def\mbk@try@file#1#2{%
     \openin\@inputcheck"#1"
