@@ -202,13 +202,20 @@
 %
 %    \begin{macrocode}
 \def\import #1 {
-    \find@in{/}{#1}{\mbk@import@newmod}{%
-            \mbk@import@nomod{#1}
-    }%
+    \find@in{/}{#1}{\mbk@import@newmod}{\mbk@import@nomod{#1}}%
 }
 \make@find@in{/}
 %    \end{macrocode}
 %
+%
+% \DescribeMacro\ModuleEndHook
+% When importing a complete module, the contents of this macro will be executed
+% at the end of reading the module. By default, this is used to execute
+% |\showquestions|, but other features may be implemented.
+%
+%    \begin{macrocode}
+\def\ModuleEndHook{\showquestions}
+%    \end{macrocode}
 %
 %
 % \subsection{Cross-Reference Expectations}
@@ -866,6 +873,7 @@
     }\reserved@a
     \begin{questions}[Questions (Answers in the back of the book)]%
 }{\end{questions}}
+%    \end{macrocode}
 %
 %
 %
@@ -923,6 +931,7 @@
         \def\mbk@current@file{#4}%
         \mbk@formatting@for{#4}%
         \@@input #1/#3/#4 %
+        \ifx\mbk@module@cur\mbk@current@file \ModuleEndHook \fi
         \mbk@module@pop
     }%
     \ifstrempty{#2}{}{\mbk@try@modfile@#2\@nil{#3}{#4}}%
@@ -982,7 +991,7 @@
 %
 %
 %
-% \subsection*{Implementation: File Inclusion}
+% \subsection{File Inclusion}
 %
 % \DescribeMacro\mbk@try@file \marg{filename} \marg{content}
 %

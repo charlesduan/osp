@@ -35,11 +35,10 @@
 \newcommand\RepositoryPath[1]{\def\mbk@repo@path{#1}}
 \RepositoryPath{local,base}
 \def\import #1 {
-    \find@in{/}{#1}{\mbk@import@newmod}{%
-            \mbk@import@nomod{#1}
-    }%
+    \find@in{/}{#1}{\mbk@import@newmod}{\mbk@import@nomod{#1}}%
 }
 \make@find@in{/}
+\def\ModuleEndHook{\showquestions}
 \def\having#1#2#3#4{%
     \@ifundefined{mbk@reg@#1}{%
         \@ifundefined{mbk@preg@#1}{#4}{#3}%
@@ -161,6 +160,7 @@
         \vskip 12pt
     }%
     \list{\theqnum}{%
+        % For more on these parameters, see https://www.ntg.nl/maps/11/33.pdf
         \if@chapternotenums
             \@nmbrlisttrue\def\@listctr{qnum}%
         \else
@@ -338,6 +338,7 @@
         \def\mbk@current@file{#4}%
         \mbk@formatting@for{#4}%
         \@@input #1/#3/#4 %
+        \ifx\mbk@module@cur\mbk@current@file \ModuleEndHook \fi
         \mbk@module@pop
     }%
     \ifstrempty{#2}{}{\mbk@try@modfile@#2\@nil{#3}{#4}}%
