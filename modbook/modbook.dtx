@@ -424,7 +424,7 @@
 %
 %    \begin{macrocode}
 \def\opinion#1\par{%
-    \vskip 6pt
+    \ifdim\lastskip>\z@\else \vskip 6pt \fi
     \noindent \textbf{#1\unskip}\par\nobreak
 }
 %    \end{macrocode}
