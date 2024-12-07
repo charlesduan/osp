@@ -1,0 +1,104 @@
+%%
+%% This is file `editfile.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% modbook.dtx  (with options: `editfile')
+%% 
+%% This is a generated file.
+%% 
+%% Copyright 2014 Charles Duan <cduan@wcl.american.edu>
+%% 
+%% This program is free software: you can redistribute it and/or modify it under
+%% the terms of the GNU General Public License as published by the Free Software
+%% Foundation, either version 3 of the License, or (at your option) any later
+%% version.
+%% 
+%% This program is distributed in the hope that it will be useful, but WITHOUT
+%% ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+%% FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+%% details.
+%% 
+%% You should have received a copy of the GNU General Public License along with
+%% this program. If not, see <https://www.gnu.org/licenses/>.
+%% 
+\ProvidesPackage{editfile}[12/07/2024 Edit files]
+\RequirePackage{etoolbox}
+\long\def\editfile#1#2\endedit{%
+    \begingroup
+        \let\edf@content\@empty
+        \openin\@inputcheck"#1" %
+        \edf@read
+        \edf@initialize@instructions
+        #2%
+    \expandafter\endgroup\edf@content
+}
+\def\edf@read{%
+    \ifeof\@inputcheck
+        \expandafter\@firstoftwo
+    \else
+        \expandafter\@secondoftwo
+    \fi
+    {%
+        \closein\@inputcheck
+    }{%
+        \read\@inputcheck to\edf@buffer
+        \expandafter\edf@read@append\expandafter{\edf@buffer}%
+        \edf@read
+    }%
+}
+\long\def\edf@read@append#1{%
+    \expandafter\edf@read@append@\expandafter{\edf@content}{#1}%
+}
+\long\def\edf@read@append@#1#2{\long\def\edf@content{#1#2}}%
+\def\edf@initialize@instructions{%
+\long\def\atstart##1{\expandafter\edf@prepend\expandafter{\edf@content}{##1}}
+\long\def\edf@prepend##1##2{\long\def\edf@content{##2##1}}%
+\long\def\atend##1{%
+    \long\expandafter\def\expandafter\edf@content\expandafter{%
+        \edf@content##1%
+    }%
+}%
+\long\def\replacestart##1##2{%
+    \long\def\edf@macro####1##1####2\@stop{%
+        \long\def\edf@content{##2####2}%
+    }%
+    \expandafter\edf@macro\edf@content\@stop
+}
+\long\def\replaceend##1##2{%
+    \long\def\edf@macro####1##1####2\@stop{%
+        \long\def\edf@content{####1##2}%
+    }%
+    \expandafter\edf@macro\edf@content\@stop
+}
+\long\def\replacerange##1##2##3{%
+    \long\def\edf@macro####1##1####2##2####3\@stop{%
+        \long\def\edf@content{####1##3####3}%
+    }%
+    \expandafter\edf@macro\edf@content\@stop
+}
+\long\def\replace##1##2{%
+    \long\def\edf@macro####1##1####2\@stop{%
+        \long\def\edf@content{####1##2####2}%
+    }%
+    \expandafter\edf@macro\edf@content\@stop
+}
+\long\def\insert##1##2{%
+    \long\def\edf@macro####1##1####2\@stop{%
+        \long\def\edf@content{####1##2##1####2}%
+    }%
+    \expandafter\edf@macro\edf@content\@stop
+}
+\long\def\append##1##2{%
+    \long\def\edf@macro####1##1####2\@stop{%
+        \long\def\edf@content{####1##1##2####2}%
+    }%
+    \expandafter\edf@macro\edf@content\@stop
+}
+\long\def\delete##1{\replace{##1}{}}
+\long\def\deleterange##1##2{\replacerange{##1}{##2}{}}
+} % End edf@initialize@instructions
+\endinput
+%%
+%% End of file `editfile.sty'.

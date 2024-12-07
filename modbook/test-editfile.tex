@@ -1,0 +1,27 @@
+\documentclass[12pt]{article}
+
+\usepackage{editfile}
+
+\begin{document}
+
+\def\myfilename{-input}
+
+\editfile{test\myfilename}
+\replacestart{Replace everything up to this header.}{The header has changed.}
+
+\delete{The following text should be deleted.}
+
+\replacerange{from the start}{the end here}{as it has been}
+
+\replaceend{Replace everything after this footer.}{The footer has changed.}
+
+\replace{chartreuse}{blue}
+
+\append{end of this sentence}{, as it has been}
+
+\atstart{Some text has been added to the start.\par}
+\atend{\par Some text has been added to the end.}
+
+\endedit
+
+\end{document}
