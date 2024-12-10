@@ -179,15 +179,22 @@
 %
 % \subsection{Importing Modules}
 %
+% \DescribeMacro\module \meta{name}
+%
+% Retrieves content for a module. This command should be the primary one that
+% compilers use when assembling a book. It is functionally equivalent to
+% |\import|~\meta{name}|/|\meta{name}.
+%
+%    \begin{macrocode}
+\def\module #1 {
+    \import #1/#1
+}
+%    \end{macrocode}
 %
 %
 % \DescribeMacro\import \meta{name}
 %
-% The \cs{import} command is the key command for incorporating content files
-% into a casebook. It is used both in the overall book to import modules, and in
-% the module files (primarily \meta{module}/\meta{module}.tex) to import content
-% for each module.
-%
+% The \cs{import} command retrieves content from a file within a module.
 % The macro takes one argument, which need not be surrounded by braces, similar
 % to |\input|. The argument may be:
 % \begin{enumerate}
@@ -195,14 +202,13 @@
 % the last-|\import|ed module.
 %
 % \item A content file with a module name (\meta{module}|/|\meta{filename}).
-%
-% \item A module name alone, in which case \meta{module}|/|\meta{module}|.tex|
-% is used.
 % \end{enumerate}
 %
 %    \begin{macrocode}
 \def\import #1 {
-    \find@in{/}{#1}{\mbk@import@newmod}{\mbk@import@nomod{#1}}%
+    \find@in{/}{#1}{\mbk@import}{%
+        \@expandarg\mbk@import{\mbk@current@mod}{#1}%
+    }%
 }
 \make@find@in{/}
 %    \end{macrocode}
@@ -760,15 +766,15 @@
     \mbk@try@file@end
 }
 \def\mbk@usegraphic#1,#2\@nil#3#4{%
-    \mbk@try@graphic{#1/\mbk@module@cur/#4.png}{#3}%
-    \mbk@try@graphic{#1/\mbk@module@cur/#4.jpg}{#3}%
-    \mbk@try@graphic{#1/\mbk@module@cur/#4.pdf}{#3}%
+    \mbk@try@graphic{#1/\mbk@current@mod/#4.png}{#3}%
+    \mbk@try@graphic{#1/\mbk@current@mod/#4.jpg}{#3}%
+    \mbk@try@graphic{#1/\mbk@current@mod/#4.pdf}{#3}%
     \mbk@try@graphic{#1/\mbk@graphicsdir/#4.png}{#3}%
     \mbk@try@graphic{#1/\mbk@graphicsdir/#4.jpg}{#3}%
     \mbk@try@graphic{#1/\mbk@graphicsdir/#4.pdf}{#3}%
     % These are tried as a last resort
     \find@in{.}{#4}{%
-        \mbk@try@graphic{#1/\mbk@module@cur/#4}{#3}%
+        \mbk@try@graphic{#1/\mbk@current@mod/#4}{#3}%
         \mbk@try@graphic{#1/\mbk@graphicsdir/#4}{#3}%
         \@gobbletwo
     }{}%
@@ -908,7 +914,7 @@
 %
 %    \begin{macrocode}
 \def\mbk@import@nomod#1{%
-    \expandafter\mbk@try@modfile\expandafter{\mbk@module@cur}{#1}%
+    \expandafter\mbk@try@modfile\expandafter{\mbk@current@mod}{#1}%
     \mbk@try@modfile{#1}{#1}%
     \mbk@try@file@default
     \PackageError{modbook}{No file `#1.tex' found}{Check that the file exists}%
@@ -930,7 +936,7 @@
         \mbk@push{#3}{#4}%
         \mbk@formatting@for{#4}%
         \@@input #1/#3/#4 %
-        \ifx\mbk@module@cur\mbk@current@file \ModuleEndHook \fi
+        \ifx\mbk@current@mod\mbk@current@file \ModuleEndHook \fi
         \mbk@pop
     }%
     \ifstrempty{#2}{}{\mbk@try@modfile@#2\@nil{#3}{#4}}%
@@ -943,11 +949,11 @@
 % module is in current use. (The normal TeX grouping mechanism cannot be used,
 % because otherwise content would be included inside groups.)
 %
-% \DescribeMacro\mbk@module@cur
+% \DescribeMacro\mbk@current@mod
 % The current module.
 %
 %    \begin{macrocode}
-\def\mbk@module@cur{}
+\def\mbk@current@mod{}
 %    \end{macrocode}
 %
 % \DescribeMacro\mbk@current@file
@@ -967,12 +973,12 @@
 %
 % \DescribeMacro\mbk@push \marg{module} \marg{file}
 %
-% Push a module onto the stack.
+% Push a module onto the stack, and sets the current module and file.
 %
 %    \begin{macrocode}
 \def\mbk@push#1#2{%
     \gpreto\mbk@module@stack{{#1}{#2}}
-    \edef\mbk@module@cur{#1}%
+    \edef\mbk@current@mod{#1}%
     \def\mbk@current@file{#2}%
 }
 %    \end{macrocode}
@@ -989,7 +995,7 @@
 }
 \def\mbk@pop@#1#2#3#4#5\@stop{%
     \gdef\mbk@module@stack{{#3}{#4}#5}%
-    \gdef\mbk@module@cur{#3}%
+    \gdef\mbk@current@mod{#3}%
     \gdef\mbk@current@file{#4}%
 }
 %    \end{macrocode}
