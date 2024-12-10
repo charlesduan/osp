@@ -1,0 +1,62 @@
+\documentclass[12pt]{book}
+
+\usepackage[
+    paperheight=10in,
+    paperwidth=7in,
+    hmargin=1in,
+    vmargin=1.25in,
+]{geometry}
+
+\usepackage{linlib}
+\setsansfont[
+    Scale=MatchLowercase,
+    SmallCapsFeatures={Numbers=Proportional},
+    Extension=.otf,
+    Path=../fonts/,
+    UprightFont=*-Regular,
+    BoldFont=*-Bold,
+    BoldItalicFont=*-BoldIt,
+    ItalicFont=*-It,
+]{SourceSans3}
+
+\usepackage[chapternotenums]{modbook}
+
+\repodir{cduan}{.}
+\repodir{base}{../base}
+
+\RepositoryPath{cduan,base}
+
+\usepackage{pdfoutline}
+
+\title{Open Source Property}
+\author{Stephen Clowney, James Grimmelmann, Michael Grynberg,\\
+Jeremy Sheff, and Rebecca Tushnet \\[12pt]
+This build edited by Charles Duan}
+
+\providecommand\term[2][]{\textbf{#2}}
+
+\begin{document}
+
+\sloppy
+\raggedbottom
+\frenchspacing
+\hbadness=9999                                                
+\parskip=0pt                                                  
+
+
+\frontmatter
+
+\maketitle
+
+\tableofcontents
+
+\module front-matter
+
+\mainmatter
+
+\part{Transferring Property}
+
+\module mortgages
+
+
+\end{document}
