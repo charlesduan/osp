@@ -34,11 +34,29 @@
 \RequirePackage[journalfonts,italcase,linkurl]{hicite}
 \newcommand\RepositoryPath[1]{\def\mbk@repo@path{#1}}
 \RepositoryPath{local,base}
+\newcommand\repodir[2]{\@namedef{mbk@repodir@#1}{#2}}
+\newcommand\mbk@repo[1]{%
+    \@ifundefined{mbk@repodir@#1}{#1}{\@nameuse{mbk@repodir@#1}}%
+}
+\def\module #1 {
+    \import #1/#1
+}
 \def\import #1 {
-    \find@in{/}{#1}{\mbk@import@newmod}{\mbk@import@nomod{#1}}%
+    \find@in{/}{#1}{\mbk@import}{%
+        \@expandarg\mbk@import{\mbk@current@mod}{#1}%
+    }%
 }
 \make@find@in{/}
 \def\ModuleEndHook{\showquestions}
+\def\editrepofile#1#2#3{%
+    \editfile{\mbk@repo{#1}/#2/#3}%
+}
+\def\editfromrepo#1{%
+    \editrepofile{#1}\mbk@current@mod\mbk@current@file
+}
+\def\editmodfile#1{%
+    \editrepofile\mbk@current@repo\mbk@current@mod{#1}%
+}
 \def\having#1#2#3#4{%
     \@ifundefined{mbk@reg@#1}{%
         \@ifundefined{mbk@preg@#1}{#4}{#3}%
@@ -259,16 +277,16 @@
     \mbk@try@file@end
 }
 \def\mbk@usegraphic#1,#2\@nil#3#4{%
-    \mbk@try@graphic{#1/\mbk@module@cur/#4.png}{#3}%
-    \mbk@try@graphic{#1/\mbk@module@cur/#4.jpg}{#3}%
-    \mbk@try@graphic{#1/\mbk@module@cur/#4.pdf}{#3}%
-    \mbk@try@graphic{#1/\mbk@graphicsdir/#4.png}{#3}%
-    \mbk@try@graphic{#1/\mbk@graphicsdir/#4.jpg}{#3}%
-    \mbk@try@graphic{#1/\mbk@graphicsdir/#4.pdf}{#3}%
+    \mbk@try@graphic{\mbk@repo{#1}/\mbk@current@mod/#4.png}{#3}%
+    \mbk@try@graphic{\mbk@repo{#1}/\mbk@current@mod/#4.jpg}{#3}%
+    \mbk@try@graphic{\mbk@repo{#1}/\mbk@current@mod/#4.pdf}{#3}%
+    \mbk@try@graphic{\mbk@repo{#1}/\mbk@graphicsdir/#4.png}{#3}%
+    \mbk@try@graphic{\mbk@repo{#1}/\mbk@graphicsdir/#4.jpg}{#3}%
+    \mbk@try@graphic{\mbk@repo{#1}/\mbk@graphicsdir/#4.pdf}{#3}%
     % These are tried as a last resort
     \find@in{.}{#4}{%
-        \mbk@try@graphic{#1/\mbk@module@cur/#4}{#3}%
-        \mbk@try@graphic{#1/\mbk@graphicsdir/#4}{#3}%
+        \mbk@try@graphic{\mbk@repo{#1}/\mbk@current@mod/#4}{#3}%
+        \mbk@try@graphic{\mbk@repo{#1}/\mbk@graphicsdir/#4}{#3}%
         \@gobbletwo
     }{}%
     \ifstrempty{#2}{}{\mbk@usegraphic#2\@nil{#3}{#4}}%
@@ -318,7 +336,7 @@
     }\reserved@a
     \begin{questions}[Questions (Answers in the back of the book)]%
 }{\end{questions}}
-\def\mbk@import@newmod#1#2{%
+\def\mbk@import#1#2{%
     \mbk@try@modfile{#1}{#2}%
     \mbk@try@file@default
     \PackageError{modbook}{No file `#1/#2.tex' found}{%
@@ -326,42 +344,37 @@
     }%
     \mbk@try@file@end
 }
-\def\mbk@import@nomod#1{%
-    \expandafter\mbk@try@modfile\expandafter{\mbk@module@cur}{#1}%
-    \mbk@try@modfile{#1}{#1}%
-    \mbk@try@file@default
-    \PackageError{modbook}{No file `#1.tex' found}{Check that the file exists}%
-    \mbk@try@file@end
-}
 \def\mbk@try@modfile#1#2{%
     \expandafter\mbk@try@modfile@\mbk@repo@path,\@nil{#1}{#2}%
 }
 \def\mbk@try@modfile@#1,#2\@nil#3#4{%
-    \mbk@try@file{#1/#3/#4}{%
+    \mbk@try@file{\mbk@repo{#1}/#3/#4}{%
         \mbk@register@file{#3}{#4}% Precedes setting of \mbk@current@file
-        \mbk@push{#3}{#4}%
+        \mbk@push{#1}{#3}{#4}%
         \mbk@formatting@for{#4}%
-        \@@input #1/#3/#4 %
-        \ifx\mbk@module@cur\mbk@current@file \ModuleEndHook \fi
+        \@@input \mbk@repo{#1}/#3/#4 %
+        \ifx\mbk@current@mod\mbk@current@file \ModuleEndHook \fi
         \mbk@pop
     }%
     \ifstrempty{#2}{}{\mbk@try@modfile@#2\@nil{#3}{#4}}%
 }
-\def\mbk@module@cur{}
+\def\mbk@current@mod{}
 \let\mbk@current@file\relax
-\def\mbk@module@stack{{}{}}
-\def\mbk@push#1#2{%
-    \gpreto\mbk@module@stack{{#1}{#2}}
-    \edef\mbk@module@cur{#1}%
-    \def\mbk@current@file{#2}%
+\def\mbk@module@stack{{}{}{}}
+\def\mbk@push#1#2#3{%
+    \gpreto\mbk@module@stack{{#1}{#2}{#3}}
+    \edef\mbk@current@repo{#1}%
+    \edef\mbk@current@mod{#2}%
+    \def\mbk@current@file{#3}%
 }
 \def\mbk@pop{%
     \expandafter\mbk@pop@\mbk@module@stack\@stop
 }
-\def\mbk@pop@#1#2#3#4#5\@stop{%
-    \gdef\mbk@module@stack{{#3}{#4}#5}%
-    \gdef\mbk@module@cur{#3}%
-    \gdef\mbk@current@file{#4}%
+\def\mbk@pop@#1#2#3#4#5#6#7\@stop{%
+    \gdef\mbk@module@stack{{#4}{#5}{#6}#7}%
+    \gdef\mbk@current@repo{#4}%
+    \gdef\mbk@current@mod{#5}%
+    \gdef\mbk@current@file{#6}%
 }
 \def\mbk@try@file#1#2{%
     \openin\@inputcheck"#1"

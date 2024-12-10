@@ -6,9 +6,23 @@ Jeremy Sheff, and Rebecca Tushnet}
 
 \usepackage{fontspec}
 
+\setmainfont{SourceSerif4}[
+    Extension=.otf,
+    Path=fonts/,
+    UprightFont=*-Regular,
+    BoldFont=*-Semibold,
+    BoldItalicFont=*-SemiboldIt,
+    ItalicFont=*-It,
+]
 
-%\setmainfont{Constantia}
-%setsansfont[Scale=MatchLowercase]{Calibri}
+\setsansfont{SourceSans3}[
+    Extension=.otf,
+    Path=fonts/,
+    UprightFont=*-Regular,
+    BoldFont=*-Bold,
+    BoldItalicFont=*-BoldIt,
+    ItalicFont=*-It,
+]
 
 %
 % Use the modbook package. See the file code/modbook.pdf for documentation.
@@ -129,6 +143,8 @@ Jeremy Sheff, and Rebecca Tushnet}
 \module land-transactions
 
 \module mortgages
+
+\module redlining
 
 \module recording-acts
 

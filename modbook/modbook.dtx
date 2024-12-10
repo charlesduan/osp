@@ -252,6 +252,19 @@
 % repository, rather than making a copy of the file. The following commands
 % enable this.
 %
+%
+% \DescribeMacro\editrepofile\marg{repo}\marg{mod}\marg{file}
+%
+% Edits a specific file located in a given repository and module. This offers
+% precise control over the file to be edited.
+%
+%    \begin{macrocode}
+\def\editrepofile#1#2#3{%
+    \editfile{\mbk@repo{#1}/#2/#3}%
+}
+%    \end{macrocode}
+%
+%
 % \DescribeMacro \editfromrepo\marg{repo} \meta{instructions} |\endedit|
 %
 % Edits a file of the same name and module as the current file, from the given
@@ -260,10 +273,9 @@
 %
 %    \begin{macrocode}
 \def\editfromrepo#1{%
-    \editfile{\mbk@repo{#1}/\mbk@current@mod/\mbk@current@file}%
+    \editrepofile{#1}\mbk@current@mod\mbk@current@file
 }
 %    \end{macrocode}
-%
 %
 %
 % \DescribeMacro \editmodfile\marg{filename} \meta{instructions} |\endedit|
@@ -273,7 +285,7 @@
 %
 %    \begin{macrocode}
 \def\editmodfile#1{%
-    \editfile{\mbk@current@repo/\mbk@current@mod/#1}%
+    \editrepofile\mbk@current@repo\mbk@current@mod{#1}%
 }
 %    \end{macrocode}
 %
@@ -954,12 +966,12 @@
 %
 % \subsection{Finding Module Files}
 %
-% \DescribeMacro\mbk@import@newmod \marg{module} \marg{filename}
+% \DescribeMacro\mbk@import \marg{module} \marg{filename}
 %
 % Imports where a module name is given.
 %
 %    \begin{macrocode}
-\def\mbk@import@newmod#1#2{%
+\def\mbk@import#1#2{%
     \mbk@try@modfile{#1}{#2}%
     \mbk@try@file@default
     \PackageError{modbook}{No file `#1/#2.tex' found}{%
@@ -969,19 +981,6 @@
 }
 %    \end{macrocode}
 %
-% \DescribeMacro\mbk@import@nomod \marg{filename}
-%
-% Imports where no module name is given.
-%
-%    \begin{macrocode}
-\def\mbk@import@nomod#1{%
-    \expandafter\mbk@try@modfile\expandafter{\mbk@current@mod}{#1}%
-    \mbk@try@modfile{#1}{#1}%
-    \mbk@try@file@default
-    \PackageError{modbook}{No file `#1.tex' found}{Check that the file exists}%
-    \mbk@try@file@end
-}
-%    \end{macrocode}
 %
 % \DescribeMacro\mbk@try@modfile \marg{module} \marg{filename}
 %
