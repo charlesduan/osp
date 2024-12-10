@@ -46,6 +46,7 @@
 % \changes{v1.0.0}{2024/01/09}{Initial version}
 % \changes{v1.0.1}{2024/01/16}{Improved readinghead}
 % \changes{v1.0.2}{2024/03/12}{Adding deferrals and multiple choice}
+% \changes{v1.0.3}{2024/12/07}{Adding file editing}
 %
 % \GetFileInfo{modbook.dtx}
 %
@@ -114,15 +115,15 @@
 %
 %    \begin{macrocode}
 \RequirePackage{etoolbox}
-\RequirePackage{strings}
 \RequirePackage{graphicx}
 \RequirePackage[deferqs]{multichoice}
+\RequirePackage{editfile}
 \RequirePackage[hyperfootnotes=false,hidelinks,linktoc=all,bookmarks=false]{hyperref}
 \RequirePackage[journalfonts,italcase,linkurl]{hicite}
 %    \end{macrocode}
 %
 %
-% \section{Modules}
+% \section{Repositories}
 %
 %
 % This package uses a rigorous file hierarchy to manage the work of editors and
@@ -130,8 +131,42 @@
 % Generally an editor (or team of editors) would be responsible for a single
 % repository. Within each repository are \emph{modules} contained in subfolders.
 %
+% \DescribeMacro\RepositoryPath \marg{path,\ldots}
 %
-% \subsection{Directory Structure}
+% Provides a list of repositories. The package will sequentially
+% search through each repository given in the argument, which should be a
+% comma-separated list, until it finds the module file required. The default
+% path is |local,base|.
+%
+%    \begin{macrocode}
+\newcommand\RepositoryPath[1]{\def\mbk@repo@path{#1}}
+\RepositoryPath{local,base}
+%    \end{macrocode}
+%
+% \DescribeMacro\repodir\marg{repository}\marg{directory}
+%
+% Allows for aliasing of repository directories. By default, a repository is
+% found in a directory with the same name. This macro can be used to change the
+% directory for a repository.
+%
+%    \begin{macrocode}
+\newcommand\repodir[2]{\@namedef{mbk@repodir@#1}{#2}}
+%    \end{macrocode}
+%
+%
+% \DescribeMacro\mbk@repo\marg{repository}
+%
+% Expands to the directory for the given repository, either given by |\repodir|
+% or the repository name itself.
+%
+%    \begin{macrocode}
+\newcommand\mbk@repo[1]{%
+    \@ifundefined{mbk@repodir@#1}{#1}{\@nameuse{mbk@repodir@#1}}%
+}
+%    \end{macrocode}
+%
+%
+% \section{Modules}
 %
 % Modules contain content files consistent with the following rules:
 % \begin{itemize}
@@ -162,19 +197,6 @@
 % \item \meta{module}|/|\meta{filename}|.tex|: Any other filename is assumed to
 % be a reading from an external source (which should start with \cs{reading}).
 % \end{itemize}
-%
-% \DescribeMacro\RepositoryPath \marg{path,\ldots}
-%
-% Provides a list of repository directories. The package will sequentially
-% search through each repository given in the argument, which should be a
-% comma-separated list, until it finds the module file required. The default
-% path is |local,base|.
-%
-%    \begin{macrocode}
-\newcommand\RepositoryPath[1]{\def\mbk@repo@path{#1}}
-\RepositoryPath{local,base}
-%    \end{macrocode}
-%
 %
 %
 % \subsection{Importing Modules}
@@ -222,6 +244,40 @@
 %    \begin{macrocode}
 \def\ModuleEndHook{\showquestions}
 %    \end{macrocode}
+%
+%
+% \subsection{Editing Modules}
+%
+% It may be desirable to edit a file in a module from this repository or another
+% repository, rather than making a copy of the file. The following commands
+% enable this.
+%
+% \DescribeMacro \editfromrepo\marg{repo} \meta{instructions} |\endedit|
+%
+% Edits a file of the same name and module as the current file, from the given
+% repository. The \meta{instructions} are the same as those for |\editfile| in
+% the |editfile| package.
+%
+%    \begin{macrocode}
+\def\editfromrepo#1{%
+    \editfile{\mbk@repo{#1}/\mbk@current@mod/\mbk@current@file}%
+}
+%    \end{macrocode}
+%
+%
+%
+% \DescribeMacro \editmodfile\marg{filename} \meta{instructions} |\endedit|
+%
+% Edits a file within the current repository and module. (This is useful, for
+% example, for editing a case while retaining the original case's full text.)
+%
+%    \begin{macrocode}
+\def\editmodfile#1{%
+    \editfile{\mbk@current@repo/\mbk@current@mod/#1}%
+}
+%    \end{macrocode}
+%
+%
 %
 %
 % \subsection{Cross-Reference Expectations}
@@ -376,7 +432,12 @@
     \refstepcounter{reading}%
     \find@in{ v. }{#2}{\mbk@oreading[\emph{#1}]{\emph{#2}}\@gobbletwo}{%
         \find@start{In re }{#2}{\mbk@oreading[\emph{#1}]{\emph{#2}}\@gobble}{%
-            \@test\ifx\mbk@readingnote\relax\fi{%
+            \ifx\mbk@readingnote\relax
+                \expandafter\@firstoftwo
+            \else
+                \expandafter\@secondoftwo
+            \fi
+            {%
                 \mbk@reading[#1]{#2}%
             }{%
                 \mbk@reading[#1]{#2\edfootnote{\mbk@readingnote}}%
@@ -766,16 +827,16 @@
     \mbk@try@file@end
 }
 \def\mbk@usegraphic#1,#2\@nil#3#4{%
-    \mbk@try@graphic{#1/\mbk@current@mod/#4.png}{#3}%
-    \mbk@try@graphic{#1/\mbk@current@mod/#4.jpg}{#3}%
-    \mbk@try@graphic{#1/\mbk@current@mod/#4.pdf}{#3}%
-    \mbk@try@graphic{#1/\mbk@graphicsdir/#4.png}{#3}%
-    \mbk@try@graphic{#1/\mbk@graphicsdir/#4.jpg}{#3}%
-    \mbk@try@graphic{#1/\mbk@graphicsdir/#4.pdf}{#3}%
+    \mbk@try@graphic{\mbk@repo{#1}/\mbk@current@mod/#4.png}{#3}%
+    \mbk@try@graphic{\mbk@repo{#1}/\mbk@current@mod/#4.jpg}{#3}%
+    \mbk@try@graphic{\mbk@repo{#1}/\mbk@current@mod/#4.pdf}{#3}%
+    \mbk@try@graphic{\mbk@repo{#1}/\mbk@graphicsdir/#4.png}{#3}%
+    \mbk@try@graphic{\mbk@repo{#1}/\mbk@graphicsdir/#4.jpg}{#3}%
+    \mbk@try@graphic{\mbk@repo{#1}/\mbk@graphicsdir/#4.pdf}{#3}%
     % These are tried as a last resort
     \find@in{.}{#4}{%
-        \mbk@try@graphic{#1/\mbk@current@mod/#4}{#3}%
-        \mbk@try@graphic{#1/\mbk@graphicsdir/#4}{#3}%
+        \mbk@try@graphic{\mbk@repo{#1}/\mbk@current@mod/#4}{#3}%
+        \mbk@try@graphic{\mbk@repo{#1}/\mbk@graphicsdir/#4}{#3}%
         \@gobbletwo
     }{}%
     \ifstrempty{#2}{}{\mbk@usegraphic#2\@nil{#3}{#4}}%
@@ -931,11 +992,11 @@
     \expandafter\mbk@try@modfile@\mbk@repo@path,\@nil{#1}{#2}%
 }
 \def\mbk@try@modfile@#1,#2\@nil#3#4{%
-    \mbk@try@file{#1/#3/#4}{%
+    \mbk@try@file{\mbk@repo{#1}/#3/#4}{%
         \mbk@register@file{#3}{#4}% Precedes setting of \mbk@current@file
-        \mbk@push{#3}{#4}%
+        \mbk@push{#1}{#3}{#4}%
         \mbk@formatting@for{#4}%
-        \@@input #1/#3/#4 %
+        \@@input \mbk@repo{#1}/#3/#4 %
         \ifx\mbk@current@mod\mbk@current@file \ModuleEndHook \fi
         \mbk@pop
     }%
@@ -963,23 +1024,24 @@
 %    \end{macrocode}
 %
 % \DescribeMacro\mbk@module@stack
-% The stack of module inclusions. The list is composed of pairs of groups, the
-% first being the module and the second being the file. An empty module/file
-% pair is included at the end.
+% The stack of module inclusions. The list is composed of triples of groups, the
+% first being the repo, the second the module, and the third being the file. An
+% empty repo/module/file triple is included at the end.
 %
 %    \begin{macrocode}
-\def\mbk@module@stack{{}{}}
+\def\mbk@module@stack{{}{}{}}
 %    \end{macrocode}
 %
-% \DescribeMacro\mbk@push \marg{module} \marg{file}
+% \DescribeMacro\mbk@push \marg{repo} \marg{module} \marg{file}
 %
 % Push a module onto the stack, and sets the current module and file.
 %
 %    \begin{macrocode}
-\def\mbk@push#1#2{%
-    \gpreto\mbk@module@stack{{#1}{#2}}
-    \edef\mbk@current@mod{#1}%
-    \def\mbk@current@file{#2}%
+\def\mbk@push#1#2#3{%
+    \gpreto\mbk@module@stack{{#1}{#2}{#3}}
+    \edef\mbk@current@repo{#1}%
+    \edef\mbk@current@mod{#2}%
+    \def\mbk@current@file{#3}%
 }
 %    \end{macrocode}
 %
@@ -993,10 +1055,11 @@
 \def\mbk@pop{%
     \expandafter\mbk@pop@\mbk@module@stack\@stop
 }
-\def\mbk@pop@#1#2#3#4#5\@stop{%
-    \gdef\mbk@module@stack{{#3}{#4}#5}%
-    \gdef\mbk@current@mod{#3}%
-    \gdef\mbk@current@file{#4}%
+\def\mbk@pop@#1#2#3#4#5#6#7\@stop{%
+    \gdef\mbk@module@stack{{#4}{#5}{#6}#7}%
+    \gdef\mbk@current@repo{#4}%
+    \gdef\mbk@current@mod{#5}%
+    \gdef\mbk@current@file{#6}%
 }
 %    \end{macrocode}
 %
@@ -1643,7 +1706,210 @@
 %
 % \iffalse
 %</multichoice>
+%<*editfile>
 % \fi
 %
+%
+%    \begin{macrocode}
+\ProvidesPackage{editfile}[12/07/2024 Edit files]
+\RequirePackage{etoolbox}
+%    \end{macrocode}
+%
+% \subsection{Editing Files}
+%
+% Consider a situation where a a file exists in a repository, and you want to
+% make small edits to it. Typically, what you would do is make a copy of the
+% file in a new repository and make changes to the copy. There are two drawbacks
+% to the copying approach, however. First, it makes the changes made opaque to
+% to other readers (or you yourself, some time in the future): To find out what
+% changes were made, the reader must run a comparison of the two files. Second,
+% if the original repository's file is updated, then your copied and edited file
+% becomes out of date.
+%
+% As a result, it would be preferable if you could specify instructions for
+% editing the file, which could be automatically applied to the original. This
+% package provides that capability. 
+%
+% \subsubsection{The Main Command}
+%
+% \DescribeMacro\editfile \marg{filename} \meta{instructions} |\endedit|
+%
+% The |\editfile| command introduces editing for a file. The file is read into
+% memory, and \meta{instructions} are sequentially applied to it. The edited
+% contents of the file are then placed on the stack for further expansion and
+% execution.
+%
+% Note that there is no ``recursive'' editing of files. However, you can edit
+% other files' |\editfile| commands. Say file $A$ runs
+% |\editfile| on file $B$, and $B$ itself contains an |\editfile| command to
+% edit file $C$. It would be incorrect in $A$ to include instructions to modify
+% $C$, because $C$ is not read into memory until $A$'s instructions have been
+% processed and executed. But $A$ can edit $B$ to add new instructions to $B$'s
+% |\editfile| command, and those added instructions will be processed on $C$.
+%
+%    \begin{macrocode}
+\long\def\editfile#1#2\endedit{%
+    \begingroup
+        \let\edf@content\@empty
+        \openin\@inputcheck"#1" %
+        \edf@read
+        \edf@initialize@instructions
+        #2%
+    \expandafter\endgroup\edf@content
+}
+%    \end{macrocode}
+%
+%
+% \DescribeMacro\edf@read
+% Reads the entire content of a file (previously opened) into a macro
+% |\edf@content|.
+%
+%    \begin{macrocode}
+\def\edf@read{%
+    \ifeof\@inputcheck
+        \expandafter\@firstoftwo
+    \else
+        \expandafter\@secondoftwo
+    \fi
+    {%
+        \closein\@inputcheck
+    }{%
+        \read\@inputcheck to\edf@buffer
+        \expandafter\edf@read@append\expandafter{\edf@buffer}%
+        \edf@read
+    }%
+}
+\long\def\edf@read@append#1{%
+    \expandafter\edf@read@append@\expandafter{\edf@content}{#1}%
+}
+\long\def\edf@read@append@#1#2{\long\def\edf@content{#1#2}}%
+%    \end{macrocode}
+%
+%
+% \subsubsection{Editing Instructions}
+%
+% These commands are only available within the context of |\editfile|.
+%
+%    \begin{macrocode}
+\def\edf@initialize@instructions{%
+%    \end{macrocode}
+%
+% \DescribeMacro\atstart \marg{text}
+% Adds text to the start of the file.
+%
+%    \begin{macrocode}
+\long\def\atstart##1{\expandafter\edf@prepend\expandafter{\edf@content}{##1}}
+\long\def\edf@prepend##1##2{\long\def\edf@content{##2##1}}%
+%    \end{macrocode}
+%
+% \DescribeMacro\atend \marg{text}
+% Adds text to the end of the file.
+%
+%    \begin{macrocode}
+\long\def\atend##1{%
+    \long\expandafter\def\expandafter\edf@content\expandafter{%
+        \edf@content##1%
+    }%
+}%
+%    \end{macrocode}
+%
+% \DescribeMacro\replacestart \marg{search}\marg{replace}
+% Searches for the given \meta{search} text, and replaces everything from the
+% start up to and including that text with \meta{replace}.
+%
+%    \begin{macrocode}
+\long\def\replacestart##1##2{%
+    \long\def\edf@macro####1##1####2\@stop{%
+        \long\def\edf@content{##2####2}%
+    }%
+    \expandafter\edf@macro\edf@content\@stop
+}
+%    \end{macrocode}
+%
+% \DescribeMacro\replaceend \marg{search}\marg{replace}
+% Searches for the given \meta{search} text, and replaces everything from and
+% including that text through the end of the file with \meta{replace}.
+%
+%    \begin{macrocode}
+\long\def\replaceend##1##2{%
+    \long\def\edf@macro####1##1####2\@stop{%
+        \long\def\edf@content{####1##2}%
+    }%
+    \expandafter\edf@macro\edf@content\@stop
+}
+%    \end{macrocode}
+%
+% \DescribeMacro\replacerange \marg{start}\marg{end}\marg{replace}
+% Searches for a range of text from \meta{start} to \meta{end}, deletes it
+% (including the search strings), and replaces it with \meta{replace}.
+%
+%    \begin{macrocode}
+\long\def\replacerange##1##2##3{%
+    \long\def\edf@macro####1##1####2##2####3\@stop{%
+        \long\def\edf@content{####1##3####3}%
+    }%
+    \expandafter\edf@macro\edf@content\@stop
+}
+%    \end{macrocode}
+%
+%
+% \DescribeMacro\replace \marg{search}\marg{replace}
+% Searches for text and replaces it. The search/replace is done only once.
+%
+%    \begin{macrocode}
+\long\def\replace##1##2{%
+    \long\def\edf@macro####1##1####2\@stop{%
+        \long\def\edf@content{####1##2####2}%
+    }%
+    \expandafter\edf@macro\edf@content\@stop
+}
+%    \end{macrocode}
+%
+%
+% \DescribeMacro\insert \marg{search}\marg{text}
+% Inserts \meta{text} before \marg{search}.
+%
+%    \begin{macrocode}
+\long\def\insert##1##2{%
+    \long\def\edf@macro####1##1####2\@stop{%
+        \long\def\edf@content{####1##2##1####2}%
+    }%
+    \expandafter\edf@macro\edf@content\@stop
+}
+%    \end{macrocode}
+%
+% \DescribeMacro\append \marg{search}\marg{text}
+% After \marg{search}, appends \meta{text}.
+%
+%    \begin{macrocode}
+\long\def\append##1##2{%
+    \long\def\edf@macro####1##1####2\@stop{%
+        \long\def\edf@content{####1##1##2####2}%
+    }%
+    \expandafter\edf@macro\edf@content\@stop
+}
+%    \end{macrocode}
+%
+% \DescribeMacro\delete \marg{search}
+% Deletes the given text. This is equivalent to |\replace| with an empty
+% replacement argument.
+%    \begin{macrocode}
+\long\def\delete##1{\replace{##1}{}}
+%    \end{macrocode}
+%
+% \DescribeMacro\deleterange \marg{start}\marg{end}
+% Deletes text between \meta{start} and \meta{end}. This is equivalent to
+% |\replacerange| with an empty replacement argument.
+%    \begin{macrocode}
+\long\def\deleterange##1##2{\replacerange{##1}{##2}{}}
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+} % End edf@initialize@instructions
+%    \end{macrocode}
+%
+% \iffalse
+%</editfile>
+% \fi
 % \Finale
 %

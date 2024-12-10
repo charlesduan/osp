@@ -21,7 +21,7 @@ modulename="$2"
 dirname=base/"$modulename"
 SOFFICE=soffice
 W2L=w2l
-postconvert=bin/post_convert.rb
+postconvert=bin/post-convert.rb
 
 if [ x"$filename" = x ] ; then
     echo "Converts Open Source Property modules from Word to TeX format."

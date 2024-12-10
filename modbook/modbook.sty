@@ -27,9 +27,9 @@
 \ProvidesPackage{modbook}
     [2024/01/09 v1.0.2 Module-based textbook]
 \RequirePackage{etoolbox}
-\RequirePackage{strings}
 \RequirePackage{graphicx}
 \RequirePackage[deferqs]{multichoice}
+\RequirePackage{editfile}
 \RequirePackage[hyperfootnotes=false,hidelinks,linktoc=all,bookmarks=false]{hyperref}
 \RequirePackage[journalfonts,italcase,linkurl]{hicite}
 \newcommand\RepositoryPath[1]{\def\mbk@repo@path{#1}}
@@ -87,7 +87,12 @@
     \refstepcounter{reading}%
     \find@in{ v. }{#2}{\mbk@oreading[\emph{#1}]{\emph{#2}}\@gobbletwo}{%
         \find@start{In re }{#2}{\mbk@oreading[\emph{#1}]{\emph{#2}}\@gobble}{%
-            \@test\ifx\mbk@readingnote\relax\fi{%
+            \ifx\mbk@readingnote\relax
+                \expandafter\@firstoftwo
+            \else
+                \expandafter\@secondoftwo
+            \fi
+            {%
                 \mbk@reading[#1]{#2}%
             }{%
                 \mbk@reading[#1]{#2\edfootnote{\mbk@readingnote}}%
@@ -118,7 +123,7 @@
     \vskip 1.5ex \@plus .2ex\relax
 }
 \def\opinion#1\par{%
-    \vskip 6pt
+    \ifdim\lastskip>\z@\else \vskip 6pt \fi
     \noindent \textbf{#1\unskip}\par\nobreak
 }
 \newcommand\readinghead[2][1]{%
