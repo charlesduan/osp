@@ -1,0 +1,177 @@
+To grasp how they system of estates works, \textbf{you must work out problems on
+your own}. It is not enough to read the text passively here. (That's why you
+have so few pages to read for this chapter.) You should do all the problems
+given above, and also try to construct some hypothetical scenarios of your own.
+
+The reason you need to work out problems on your own is that you need to develop
+a method for notating the property interests involved in any given problem. I
+will show you one way of keeping track of the interests; you are free to come up
+with your own if it works better for you. Whatever you choose, though, must be
+precise enough to track each interest by name, holder, and relationship with
+other interests.
+
+Consider, for example, a situation where O conveys Blackacre ``to A for life,
+then to B.'' You might say that A holds a life estate and B has a remainder, but
+that description has plenty of ambiguity. Whose life does A's life estate depend
+upon? What does B's remainder follow? And when B's future interest converts to a
+possessory estate, which one does it become? In this simple example the answers
+might be obvious, but throw in a more complicated conveyance and several
+property transfers, and the exact nature of the interests can easily become
+lost.
+
+A more complete description of the interests is:
+\begin{itemize}
+\item A has a life estate in Blackacre for the life of A.
+\item B has a remainder, following the life estate in Blackacre for
+the life of A, which will become fee simple absolute in Blackacre.
+\end{itemize}
+This is complete and unambiguous, but also pretty wordy for purposes of
+notetaking and working out problems. We can omit ``Blackacre'' given that only
+one property is involved (but don't omit it if there are more!). We'll give the
+interests identifiers (interest \#1, interest \#2) to make them easier to talk
+about. Let's also introduce some abbreviations.
+\begin{center}
+\begin{tabular}{ll}
+FSA & Fee simple absolute \\
+LE(P) & Life estate for the life of person P \\
+Rem(\#I, E) & Remainder following interest \#I, \\
+ & which will become estate E \\
+Rev(\#I, E) & Reversion following interest \#I, \\
+ & which will become estate E \\
+\end{tabular}
+\end{center}
+
+Now we can fully characterize the interests in Blackacre as follows:
+\begin{itemize}
+\item A has interest \#1: LE(A)
+\item B has interest \#2: Rem(\#1, FSA)
+\end{itemize}
+Even better, let's put it in tabular form:
+\begin{center}
+\begin{tabular}{l|ll}
+Event & A & B \\
+\hline
+Grant from O & \#1: LE(A) & \#2: Rem(\#1, FSA) \\
+\end{tabular}
+\end{center}
+
+At this point, the table and abbreviations may seem unnecessarily cryptic.
+Again, feel free to choose abbreviations that work best for you. But the value
+of this structure comes when the interests start moving around. Say that A
+decides to move to Hawaii, and gifts Blackacre to her sister C. What does C
+have? All we need to do is to copy A's property interest over to a new column
+for C:
+\begin{center}
+\begin{tabular}{l|lll}
+Event & A & B & C \\
+\hline
+Grant from O & \#1: LE(A) & \#2: Rem(\#1, FSA) & \\
+A to C & & \#2: Rem(\#1, FSA) & \#1: LE(A) \\
+\end{tabular}
+\end{center}
+The notation makes clear that C's interest is based on A's life, not C's; that
+is, C has a life estate pur autre vie for the life of A. If C dies, leaving all
+her property to D:
+\begin{center}
+\begin{tabular}{l|llll}
+Event & A & B & C & D \\
+\hline
+Grant from O & \#1: LE(A) & \#2: Rem(\#1, FSA) & &\\
+A to C & & \#2: Rem(\#1, FSA) & \#1: LE(A) & \\
+C dies & & \#2: Rem(\#1, FSA) & & \#1: LE(A) \\
+\end{tabular}
+\end{center}
+The table thus makes clear that C's death only causes a transfer of the life
+estate, but does not change the interest or any other interests.
+
+What happens when A dies? We just follow two rules:
+\begin{itemize}
+\item When person P dies, LE(P) terminates.
+\item When interest \#I terminates, then Rem(\#I, E) or Rev(\#I, E) turns into
+E.
+\end{itemize}
+Applied to the table, that means that when A dies, the life estate disappears,
+and the remainder converts as follows:
+\begin{center}
+\begin{tabular}{l|llll}
+Event & A & B & C & D \\
+\hline
+Grant from O & \#1: LE(A) & \#2: Rem(\#1, FSA) & &\\
+A to C & & \#2: Rem(\#1, FSA) & \#1: LE(A) & \\
+C dies & & \#2: Rem(\#1, FSA) & & \#1: LE(A) \\
+A dies & & \#2: FSA & & [terminated] \\
+\end{tabular}
+\end{center}
+
+Let's now work out a more complex problem, the third question in note
+\ref{estates-q1}. (Try to work it out yourself first.) Initially, we need to
+translate the conveyance ``O to A for life, then to B for life'' into our
+notation. A has a life estate for the life of A, which we will call \#1: LE(A).
+B's interest follows A's, so it is a remainder that will become a life estate
+for the life of B, which we notate \#2: Rem(\#1, LE(B)). This gives the
+following table:
+\begin{center}
+\begin{tabular}{l|ll}
+Event & A & B \\
+\hline
+Grant from O & \#1: LE(A) & \#2: Rem(\#1, LE(B)) \\
+\end{tabular}
+\end{center}
+Are we done? A good check, which works for any row of these tables, is to start
+with the possessory estate and follow the chain of interests. The last one must
+be, or be convertible to, fee simple absolute---otherwise the property might
+have no one entitled to possess it at some point. Here, we start with A's
+interest \#1, which is followed by B's interest \#2 that can convert into a life
+estate, and then what? Since the grant from O specifies nothing else, we infer a
+reversion following the last interest in the chain:
+\begin{center}
+\begin{tabular}{l|lll}
+Event & A & B & O \\
+\hline
+Grant from O & \#1: LE(A) & \#2: Rem(\#1, LE(B)) & \#3: Rev(\#2, FSA) \\
+\end{tabular}
+\end{center}
+Now there is a complete chain of future interests, ending with someone receiving
+fee simple absolute ownership.
+
+Next in the problem, O dies. None of the life estates are based on O's life, so
+no interests need to be converted. But O does own something, because O has an
+entry in the table. That entry needs to go to someone else now, since O, being
+dead, can't own property. We'll call this recipient of O's property ``O's
+heir'':
+\begin{center}
+\begin{tabular}{l|llll}
+Event & A & B & O & O's heir \\
+\hline
+Grant & \#1: LE(A) & \#2: Rem(\#1, LE(B)) & \#3: Rev(\#2, FSA) & \\
+O dies & \#1: LE(A) & \#2: Rem(\#1, LE(B)) & & \#3: Rev(\#2, FSA) \\
+\end{tabular}
+\end{center}
+(Challenge question: What happens if A is O's heir?)
+
+Next, the problem says that A dies. There is a life estate for the life of A, so
+we apply the conversion rules to interests \#1 and \#2:
+\begin{center}
+\begin{tabular}{l|llll}
+Event & A & B & O & O's heir \\
+\hline
+Grant & \#1: LE(A) & \#2: Rem(\#1, LE(B)) & \#3: Rev(\#2, FSA) & \\
+O dies & \#1: LE(A) & \#2: Rem(\#1, LE(B)) & & \#3: Rev(\#2, FSA) \\
+A dies & [term.] & \#2: LE(B) & & \#3: Rev(\#2, FSA) \\
+\end{tabular}
+\end{center}
+Finally, B dies. Again, since a life estate depends on B's life, we apply the
+conversion rules, now to interests \#2 and \#3:
+\begin{center}
+\begin{tabular}{l|llll}
+Event & A & B & O & O's heir \\
+\hline
+Grant & \#1: LE(A) & \#2: Rem(\#1, LE(B)) & \#3: Rev(\#2, FSA) & \\
+O dies & \#1: LE(A) & \#2: Rem(\#1, LE(B)) & & \#3: Rev(\#2, FSA) \\
+A dies & [term.] & \#2: LE(B) & & \#3: Rev(\#2, FSA) \\
+B dies & & [term.] & & FSA \\
+\end{tabular}
+\end{center}
+The result, as the table makes clear, is that O's heir takes Blackacre in fee
+simple absolute.
+
