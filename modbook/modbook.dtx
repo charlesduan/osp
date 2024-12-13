@@ -47,6 +47,7 @@
 % \changes{v1.0.1}{2024/01/16}{Improved readinghead}
 % \changes{v1.0.2}{2024/03/12}{Adding deferrals and multiple choice}
 % \changes{v1.0.3}{2024/12/07}{Adding file editing}
+% \changes{v1.0.4}{2024/12/12}{Adding key term tracking}
 %
 % \GetFileInfo{modbook.dtx}
 %
@@ -384,6 +385,100 @@
     \gdef\mbk@expectnext{#1}%
 }
 \let\mbk@expectnext\relax
+%    \end{macrocode}
+%
+%
+% \section{Key Terms}
+%
+% Content in a book often introduces new terms and concepts. Keeping track of
+% those terms is useful for several reasons. Key terms in the book ought to be
+% formatted consistently. They also are useful as the basis of an index.
+%
+% Additionally, key terms serve as a mechanism for checking the order of
+% modules. Presumably, if a key term is used in a chapter, it ought to have been
+% defined and explained earlier in the book. Thus, commands for tracking the
+% places where a key term is defined and used serve as an alternative to the
+% cross-reference management features described above.
+%
+% \DescribeMacro\term \oarg{name}\marg{text}
+%
+% Indicates that a key term is being defined at or near this location. The
+% \meta{text} is emitted, formatted in accordance with |\FormatTerm|. The term
+% is also indexed in accordance with |\IndexTerm|, using \meta{name} if given,
+% or \meta{text} if not.
+%
+% If a term is to be indexed but not displayed, make \meta{text} empty and fill
+% only the \meta{name} argument. (There is no need for the converse; to format a
+% term without indexing it, just use |\FormatTerm| directly.)
+%
+%    \begin{macrocode}
+\newcommand\term[2][]{%
+    \ifstrempty{#2}{}{\FormatTerm{#2}}%
+    \ifstrempty{#1}{\mbk@term{#2}}{\mbk@term{#1}}%
+}
+\def\mbk@term#1{%
+    \IndexTerm{#1}%
+    \protected@write\@auxout{}{\mbk@register@term{#1}{\thepage}}%
+    \@namedef{mbk@termused@#1}{}%
+}
+%    \end{macrocode}
+%
+% \DescribeMacro\FormatTerm \marg{term}
+% Formats the term for text. By default, it is put in bold.
+%
+%    \begin{macrocode}
+\def\FormatTerm#1{\textbf{#1}}
+%    \end{macrocode}
+%
+% \DescribeMacro\IndexTerm \marg{term}
+% Performs any custom indexing of the term. Note that, as described below,
+% the macro |\mbk@termloc@|\meta{term} will be defined to have the page
+% number(s) on which the term is used, in the form of an |etoolbox| list.
+%
+% Initially, this macro does nothing.
+%
+%    \begin{macrocode}
+\def\IndexTerm#1{}
+%    \end{macrocode}
+%
+% \DescribeMacro\mbk@register@term\marg{term}\marg{page}
+% Used in the aux file, this macro indicates that \meta{term} was defined on
+% \meta{page}.
+%    \begin{macrocode}
+\def\mbk@register@term#1#2{%
+    \listcsadd{mbk@termloc@#1}{#2}%
+}
+%    \end{macrocode}
+%
+% \DescribeMacro\withterm\marg{term}\marg{do-with}\marg{do-without}
+%
+% Tests whether \meta{term} has been defined in the book (using the |\term|
+% command). If so, then executes the contents of \meta{do-with}. Otherwise,
+% executes the contents of \meta{do-without}.
+%
+%    \begin{macrocode}
+\def\withterm#1#2#3{%
+    \@ifundefined{mbk@termused@#1}{#3}{#2}%
+}
+%    \end{macrocode}
+%
+% \DescribeMacro\checkterm \marg{term} Produces a warning if the term
+% has not been defined so far. (TODO: This should perhaps also index the term.)
+%
+% \DescribeMacro\useterm \marg{term} Runs |\checkterm| on the term, and also
+% emits it (as plain text).
+%
+%    \begin{macrocode}
+\def\checkterm#1{%
+    \withterm{#1}{}{%
+        \PackageWarning{modbook}{%
+            In file `\mbk@current@file',^^J%
+            term `#1' was used but not previously defined%
+        }%
+        \G@refundefinedtrue
+    }%
+}
+\def\useterm#1{\checkterm{#1}#1}%
 %    \end{macrocode}
 %
 %

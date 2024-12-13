@@ -96,6 +96,33 @@
     \gdef\mbk@expectnext{#1}%
 }
 \let\mbk@expectnext\relax
+\newcommand\term[2][]{%
+    \ifstrempty{#2}{}{\FormatTerm{#2}}%
+    \ifstrempty{#1}{\mbk@term{#2}}{\mbk@term{#1}}%
+}
+\def\mbk@term#1{%
+    \IndexTerm{#1}%
+    \protected@write\@auxout{}{\mbk@register@term{#1}{\thepage}}%
+    \@namedef{mbk@termused@#1}{}%
+}
+\def\FormatTerm#1{\textbf{#1}}
+\def\IndexTerm#1{}
+\def\mbk@register@term#1#2{%
+    \listcsadd{mbk@termloc@#1}{#2}%
+}
+\def\withterm#1#2#3{%
+    \@ifundefined{mbk@termused@#1}{#3}{#2}%
+}
+\def\checkterm#1{%
+    \withterm{#1}{}{%
+        \PackageWarning{modbook}{%
+            In file `\mbk@current@file',^^J%
+            term `#1' was used but not previously defined%
+        }%
+        \G@refundefinedtrue
+    }%
+}
+\def\useterm#1{\checkterm{#1}#1}%
 \def\readingnote#1{\def\mbk@readingnote{#1}}%
 \let\mbk@readingnote\relax
 \def\reading{%
