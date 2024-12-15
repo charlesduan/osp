@@ -27,13 +27,21 @@
 \RequirePackage{etoolbox}
 \long\def\editfile#1#2\endedit{%
     \begingroup
+        \def\edf@filename{#1}%
         \let\edf@content\@empty
         \openin\@inputcheck"#1" %
-        \edf@read
-        \edf@initialize@instructions
-        #2%
+        \ifeof\@inputcheck
+            \PackageError{editfile}{%
+                File \edf@filename\space for editing not found%
+            }{Check that the file exists}%
+        \else
+            \edf@read
+            \edf@initialize@instructions
+            #2%
+        \fi
     \expandafter\endgroup\edf@content
 }
+\let\edf@filename\relax
 \def\edf@read{%
     \ifeof\@inputcheck
         \expandafter\@firstoftwo
@@ -53,52 +61,70 @@
 }
 \long\def\edf@read@append@#1#2{\long\def\edf@content{#1#2}}%
 \def\edf@initialize@instructions{%
-\long\def\atstart##1{\expandafter\edf@prepend\expandafter{\edf@content}{##1}}
-\long\def\edf@prepend##1##2{\long\def\edf@content{##2##1}}%
+\long\def\atstart##1{%
+    \edef\edf@content{\unexpanded{##1}\expandonce\edf@content}%
+}
 \long\def\atend##1{%
     \long\expandafter\def\expandafter\edf@content\expandafter{%
         \edf@content##1%
     }%
 }%
 \long\def\replacestart##1##2{%
-    \long\def\edf@macro####1##1####2\@stop{%
-        \long\def\edf@content{##2####2}%
-    }%
-    \expandafter\edf@macro\edf@content\@stop
-}
+    \edf@findtext@in@content{##1}{\edf@replacestart{##2}}%
+}%
+\long\def\edf@replacestart##1##2##3{\long\def\edf@content{##1##3}}%
 \long\def\replaceend##1##2{%
-    \long\def\edf@macro####1##1####2\@stop{%
-        \long\def\edf@content{####1##2}%
-    }%
-    \expandafter\edf@macro\edf@content\@stop
-}
+    \edf@findtext@in@content{##1}{\edf@replaceend{##2}}%
+}%
+\long\def\edf@replaceend##1##2##3{\long\def\edf@content{##2##1}}%
 \long\def\replacerange##1##2##3{%
-    \long\def\edf@macro####1##1####2##2####3\@stop{%
-        \long\def\edf@content{####1##3####3}%
-    }%
-    \expandafter\edf@macro\edf@content\@stop
-}
+    \edf@findtext@range@content{##1}{##2}{\edf@replacerange{##3}}%
+}%
+\long\def\edf@replacerange##1##2##3##4{\long\def\edf@content{##2##1##4}}%
 \long\def\replace##1##2{%
-    \long\def\edf@macro####1##1####2\@stop{%
-        \long\def\edf@content{####1##2####2}%
-    }%
-    \expandafter\edf@macro\edf@content\@stop
-}
+    \edf@findtext@in@content{##1}{\edf@replace{##2}}%
+}%
+\long\def\edf@replace##1##2##3{\long\def\edf@content{##2##1##3}}%
 \long\def\insert##1##2{%
-    \long\def\edf@macro####1##1####2\@stop{%
-        \long\def\edf@content{####1##2##1####2}%
-    }%
-    \expandafter\edf@macro\edf@content\@stop
-}
+    \edf@findtext@in@content{##1}{\edf@replace{##2##1}}%
+}%
 \long\def\append##1##2{%
-    \long\def\edf@macro####1##1####2\@stop{%
-        \long\def\edf@content{####1##1##2####2}%
-    }%
-    \expandafter\edf@macro\edf@content\@stop
+    \edf@findtext@in@content{##1}{\edf@replace{##1##2}}%
 }
 \long\def\delete##1{\replace{##1}{}}
 \long\def\deleterange##1##2{\replacerange{##1}{##2}{}}
 } % End edf@initialize@instructions
+\long\def\edf@findtext@in#1#2#3{%
+    \long\def\edf@macro##1#2##2\@stop{%
+        \ifstrempty{##2}{\edf@findtext@err{#2}}{%
+            \edf@findtext@strip##2\@stop{#3{##1}}%
+        }%
+    }%
+    \edf@macro#1\@mark#2\@stop
+}
+\long\def\edf@findtext@strip#1\@mark#2\@stop#3{#3{#1}}
+\long\def\edf@findtext@err#1{%
+    \expandafter\edf@findtext@err@\expandafter{\detokenize{#1}}%
+}
+\long\def\edf@findtext@err@#1{%
+    \PackageError{editfile}{Text `#1' was not found in
+    \edf@filename}{Check that the text was not mistyped}%
+}
+\long\def\edf@findtext@in@content#1#2{%
+    \expandafter\edf@findtext@in\expandafter{\edf@content}{#1}{#2}%
+}
+\long\def\edf@findtext@range#1#2#3#4{%
+    \edf@findtext@in{#1}{#2}{\edf@findtext@range@{#3}{#4}}%
+}
+\long\def\edf@findtext@range@#1#2#3#4{%
+    \edf@findtext@in{#4}{#1}{\edf@findtext@range@@{#2{#3}}}%
+}
+\long\def\edf@findtext@range@@#1#2#3{%
+    #1{#2}{#3}%
+}
+\long\def\edf@findtext@range@content#1#2#3{%
+    \expandafter\edf@findtext@range\expandafter{\edf@content}{#1}{#2}{#3}%
+}
 \endinput
 %%
 %% End of file `editfile.sty'.

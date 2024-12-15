@@ -419,7 +419,8 @@
 \def\mbk@term#1{%
     \IndexTerm{#1}%
     \protected@write\@auxout{}{\mbk@register@term{#1}{\thepage}}%
-    \@namedef{mbk@termused@#1}{}%
+    \immediate\write16{Defining term #1}%
+    \global\@namedef{mbk@termused@#1}{}%
 }
 %    \end{macrocode}
 %
@@ -470,7 +471,7 @@
 %
 %    \begin{macrocode}
 \def\checkterm#1{%
-    \withterm{#1}{}{%
+    \withterm{#1}{\immediate\write16{Term #1 used}}{%
         \PackageWarning{modbook}{%
             In file `\mbk@current@file',^^J%
             term `#1' was used but not previously defined%
@@ -1203,12 +1204,12 @@
     \def\reserved@a{#2}%
     \ifx\mbk@expectnext\relax\else
         \ifx\reserved@a\mbk@expectnext\else
-            \def\reserved@a{#1#2}%
+            \def\reserved@a{#1/#2}%
             \ifx\reserved@a\mbk@expectnext\else
                 \PackageWarning{modbook}{%
                     In file `\mbk@current@file',^^J%
                     file `\mbk@expectnext' should have been included here,^^J%
-                    but `#1#2' was included instead%
+                    but `#1/#2' was included instead%
                 }%
                 \G@refundefinedtrue
             \fi
@@ -1844,13 +1845,21 @@
 %    \begin{macrocode}
 \long\def\editfile#1#2\endedit{%
     \begingroup
+        \def\edf@filename{#1}%
         \let\edf@content\@empty
         \openin\@inputcheck"#1" %
-        \edf@read
-        \edf@initialize@instructions
-        #2%
+        \ifeof\@inputcheck
+            \PackageError{editfile}{%
+                File \edf@filename\space for editing not found%
+            }{Check that the file exists}%
+        \else
+            \edf@read
+            \edf@initialize@instructions
+            #2%
+        \fi
     \expandafter\endgroup\edf@content
 }
+\let\edf@filename\relax
 %    \end{macrocode}
 %
 %
@@ -1892,8 +1901,9 @@
 % Adds text to the start of the file.
 %
 %    \begin{macrocode}
-\long\def\atstart##1{\expandafter\edf@prepend\expandafter{\edf@content}{##1}}
-\long\def\edf@prepend##1##2{\long\def\edf@content{##2##1}}%
+\long\def\atstart##1{%
+    \edef\edf@content{\unexpanded{##1}\expandonce\edf@content}%
+}
 %    \end{macrocode}
 %
 % \DescribeMacro\atend \marg{text}
@@ -1913,11 +1923,9 @@
 %
 %    \begin{macrocode}
 \long\def\replacestart##1##2{%
-    \long\def\edf@macro####1##1####2\@stop{%
-        \long\def\edf@content{##2####2}%
-    }%
-    \expandafter\edf@macro\edf@content\@stop
-}
+    \edf@findtext@in@content{##1}{\edf@replacestart{##2}}%
+}%
+\long\def\edf@replacestart##1##2##3{\long\def\edf@content{##1##3}}%
 %    \end{macrocode}
 %
 % \DescribeMacro\replaceend \marg{search}\marg{replace}
@@ -1926,11 +1934,9 @@
 %
 %    \begin{macrocode}
 \long\def\replaceend##1##2{%
-    \long\def\edf@macro####1##1####2\@stop{%
-        \long\def\edf@content{####1##2}%
-    }%
-    \expandafter\edf@macro\edf@content\@stop
-}
+    \edf@findtext@in@content{##1}{\edf@replaceend{##2}}%
+}%
+\long\def\edf@replaceend##1##2##3{\long\def\edf@content{##2##1}}%
 %    \end{macrocode}
 %
 % \DescribeMacro\replacerange \marg{start}\marg{end}\marg{replace}
@@ -1939,11 +1945,9 @@
 %
 %    \begin{macrocode}
 \long\def\replacerange##1##2##3{%
-    \long\def\edf@macro####1##1####2##2####3\@stop{%
-        \long\def\edf@content{####1##3####3}%
-    }%
-    \expandafter\edf@macro\edf@content\@stop
-}
+    \edf@findtext@range@content{##1}{##2}{\edf@replacerange{##3}}%
+}%
+\long\def\edf@replacerange##1##2##3##4{\long\def\edf@content{##2##1##4}}%
 %    \end{macrocode}
 %
 %
@@ -1952,11 +1956,9 @@
 %
 %    \begin{macrocode}
 \long\def\replace##1##2{%
-    \long\def\edf@macro####1##1####2\@stop{%
-        \long\def\edf@content{####1##2####2}%
-    }%
-    \expandafter\edf@macro\edf@content\@stop
-}
+    \edf@findtext@in@content{##1}{\edf@replace{##2}}%
+}%
+\long\def\edf@replace##1##2##3{\long\def\edf@content{##2##1##3}}%
 %    \end{macrocode}
 %
 %
@@ -1965,11 +1967,8 @@
 %
 %    \begin{macrocode}
 \long\def\insert##1##2{%
-    \long\def\edf@macro####1##1####2\@stop{%
-        \long\def\edf@content{####1##2##1####2}%
-    }%
-    \expandafter\edf@macro\edf@content\@stop
-}
+    \edf@findtext@in@content{##1}{\edf@replace{##2##1}}%
+}%
 %    \end{macrocode}
 %
 % \DescribeMacro\append \marg{search}\marg{text}
@@ -1977,10 +1976,7 @@
 %
 %    \begin{macrocode}
 \long\def\append##1##2{%
-    \long\def\edf@macro####1##1####2\@stop{%
-        \long\def\edf@content{####1##1##2####2}%
-    }%
-    \expandafter\edf@macro\edf@content\@stop
+    \edf@findtext@in@content{##1}{\edf@replace{##1##2}}%
 }
 %    \end{macrocode}
 %
@@ -2000,6 +1996,76 @@
 %
 %    \begin{macrocode}
 } % End edf@initialize@instructions
+%    \end{macrocode}
+%
+%
+% \DescribeMacro\edf@findtextin\marg{haystack}\marg{needle}\marg{callback}
+%
+% Searches text \meta{haystack} for text \meta{needle}. Upon finding it,
+% executes \meta{callback} with two arguments, the text before \meta{needle} and
+% the text after. If the text is not found, an error is raised.
+%
+%    \begin{macrocode}
+\long\def\edf@findtext@in#1#2#3{%
+    \long\def\edf@macro##1#2##2\@stop{%
+        \ifstrempty{##2}{\edf@findtext@err{#2}}{%
+            \edf@findtext@strip##2\@stop{#3{##1}}%
+        }%
+    }%
+    \edf@macro#1\@mark#2\@stop
+}
+\long\def\edf@findtext@strip#1\@mark#2\@stop#3{#3{#1}}
+\long\def\edf@findtext@err#1{%
+    \expandafter\edf@findtext@err@\expandafter{\detokenize{#1}}%
+}
+\long\def\edf@findtext@err@#1{%
+    \PackageError{editfile}{Text `#1' was not found in
+    \edf@filename}{Check that the text was not mistyped}%
+}
+%    \end{macrocode}
+%
+% \DescribeMacro\edf@findtext@in@content\marg{find}\marg{callback}
+%
+% Finds text in |\edf@content|.
+%
+%    \begin{macrocode}
+\long\def\edf@findtext@in@content#1#2{%
+    \expandafter\edf@findtext@in\expandafter{\edf@content}{#1}{#2}%
+}
+%    \end{macrocode}
+%
+% \DescribeMacro\edf@findtext@range\marg{haystack}\marg{start}\marg{end}
+% \marg{callback}
+%
+% Searches \meta{haystack} for the range of text between \meta{start} and
+% \meta{end}, and then runs \meta{callback} with three arguments: the text
+% before the range, the text between the range (excluding the start and end
+% texts), and the text after the range.
+%
+%    \begin{macrocode}
+\long\def\edf@findtext@range#1#2#3#4{%
+    \edf@findtext@in{#1}{#2}{\edf@findtext@range@{#3}{#4}}%
+}
+% \#1 is the end text, \#2 the callback, \#3 the pre-start text, \#4 the post
+% start text.
+\long\def\edf@findtext@range@#1#2#3#4{%
+    \edf@findtext@in{#4}{#1}{\edf@findtext@range@@{#2{#3}}}%
+}
+% \#1 is the callback (with pre-start text), \#2 the range text, \#3 the post
+% end text.
+\long\def\edf@findtext@range@@#1#2#3{%
+    #1{#2}{#3}%
+}
+%    \end{macrocode}
+%
+% \DescribeMacro\edf@findtext@range@content
+% \marg{start}\marg{end}\marg{callback}
+%
+% Searches |\edf@content| for the given range.
+%    \begin{macrocode}
+\long\def\edf@findtext@range@content#1#2#3{%
+    \expandafter\edf@findtext@range\expandafter{\edf@content}{#1}{#2}{#3}%
+}
 %    \end{macrocode}
 %
 % \iffalse

@@ -103,7 +103,7 @@
 \def\mbk@term#1{%
     \IndexTerm{#1}%
     \protected@write\@auxout{}{\mbk@register@term{#1}{\thepage}}%
-    \@namedef{mbk@termused@#1}{}%
+    \global\@namedef{mbk@termused@#1}{}%
 }
 \def\FormatTerm#1{\textbf{#1}}
 \def\IndexTerm#1{}
@@ -114,7 +114,7 @@
     \@ifundefined{mbk@termused@#1}{#3}{#2}%
 }
 \def\checkterm#1{%
-    \withterm{#1}{}{%
+    \withterm{#1}{\immediate\write16{Term #1 used}}{%
         \PackageWarning{modbook}{%
             In file `\mbk@current@file',^^J%
             term `#1' was used but not previously defined%
@@ -417,12 +417,12 @@
     \def\reserved@a{#2}%
     \ifx\mbk@expectnext\relax\else
         \ifx\reserved@a\mbk@expectnext\else
-            \def\reserved@a{#1#2}%
+            \def\reserved@a{#1/#2}%
             \ifx\reserved@a\mbk@expectnext\else
                 \PackageWarning{modbook}{%
                     In file `\mbk@current@file',^^J%
                     file `\mbk@expectnext' should have been included here,^^J%
-                    but `#1#2' was included instead%
+                    but `#1/#2' was included instead%
                 }%
                 \G@refundefinedtrue
             \fi
