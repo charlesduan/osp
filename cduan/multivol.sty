@@ -1,0 +1,68 @@
+\ProvidesPackage{multivol}[2024/12/24 Typesetting a multivolume work]
+\newcounter{volume}
+\newcounter{multivol@page}
+\renewcommand\thevolume{\@Roman\c@volume}
+\def\makevolume{%
+    \frontmatter
+    \refstepcounter{volume}%
+    \addtocontents{toc}{\protect\l@volume{\thevolume}}%
+    \normalfont
+    \maketitle
+}
+\def\frontmatter{%
+    \cleardoublepage
+    \if@mainmatter \c@multivol@page=\c@page \fi
+    \pagenumbering{roman}%
+}
+\def\mainmatter{%
+    \cleardoublepage
+    \@mainmattertrue
+    \pagenumbering{arabic}%
+    \c@page=\c@multivol@page
+}
+\def\maketitle{%
+    \begin{titlepage}%
+        \let\footnotesize\small
+        \let\footnoterule\relax
+        \let \footnote \thanks
+        \null\vfil
+        \vskip 60\p@
+        \begin{center}%
+        {\LARGE \@title \par Volume \thevolume\par}%
+        \vskip 3em%
+        {%
+            \large
+            \lineskip .75em%
+            \begin{tabular}[t]{c}%
+                \@author
+            \end{tabular}\par
+        }%
+        \vskip 1.5em%
+        {\large \@date \par}%       % Set date in \large size.
+        \end{center}\par
+        \@thanks
+        \vfil\null
+    \end{titlepage}%
+    \setcounter{footnote}{0}%
+}
+\def\@starttoc#1{%
+    \begingroup
+        \makeatletter
+        \@input{\jobname.#1}%
+        \@nobreakfalse
+        \AtEndDocument{%
+            \if@filesw
+                \expandafter\newwrite\csname tf@#1\endcsname
+                \immediate\openout \csname tf@#1\endcsname \jobname.#1\relax
+            \fi
+        }%
+    \endgroup
+}
+\def\l@volume#1{%
+    \addpenalty{-\@highpenalty}%
+    \addvspace{2.25em \@plus\p@}%
+    \begin{centering}
+        \Large \textsc{Volume #1}\par
+    \end{centering}
+}
+\endinput
