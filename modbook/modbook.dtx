@@ -419,7 +419,6 @@
 \def\mbk@term#1{%
     \IndexTerm{#1}%
     \protected@write\@auxout{}{\mbk@register@term{#1}{\thepage}}%
-    \immediate\write16{Defining term #1}%
     \global\@namedef{mbk@termused@#1}{}%
 }
 %    \end{macrocode}
@@ -471,7 +470,7 @@
 %
 %    \begin{macrocode}
 \def\checkterm#1{%
-    \withterm{#1}{\immediate\write16{Term #1 used}}{%
+    \withterm{#1}{}{%
         \PackageWarning{modbook}{%
             In file `\mbk@current@file',^^J%
             term `#1' was used but not previously defined%
