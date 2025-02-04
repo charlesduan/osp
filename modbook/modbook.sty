@@ -114,7 +114,7 @@
     \@ifundefined{mbk@termused@#1}{#3}{#2}%
 }
 \def\checkterm#1{%
-    \withterm{#1}{\immediate\write16{Term #1 used}}{%
+    \withterm{#1}{}{%
         \PackageWarning{modbook}{%
             In file `\mbk@current@file',^^J%
             term `#1' was used but not previously defined%
