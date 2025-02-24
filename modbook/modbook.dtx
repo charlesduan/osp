@@ -107,12 +107,9 @@
 %
 % \section{Installation and Dependencies}
 %
-% The package uses \textsf{hyperref} for internal cross-references, and
-% \textsf{hicite} for URL formatting and a few other things. It also requires
-% the \textsf{graphicx} and \textsf{etoolbox} packages.
-%
-% Because \textsf{hicite} is included, you may use it for managing citations
-% within the casebook as well, although this is optional.
+% The package uses \textsf{hyperref} for internal cross-references, and the
+% \textsf{strings} package from \textsf{hicite}. It also requires the
+% \textsf{graphicx} and \textsf{etoolbox} packages.
 %
 %    \begin{macrocode}
 \RequirePackage{etoolbox}
@@ -120,7 +117,7 @@
 \RequirePackage[deferqs]{multichoice}
 \RequirePackage{editfile}
 \RequirePackage[hyperfootnotes=false,hidelinks,linktoc=all,bookmarks=false]{hyperref}
-\RequirePackage[journalfonts,italcase,linkurl]{hicite}
+\RequirePackage{strings}
 %    \end{macrocode}
 %
 %
@@ -418,7 +415,6 @@
 }
 \def\mbk@term#1{%
     \IndexTerm{#1}%
-    \protected@write\@auxout{}{\mbk@register@term{#1}{\thepage}}%
     \global\@namedef{mbk@termused@#1}{}%
 }
 %    \end{macrocode}
@@ -431,23 +427,11 @@
 %    \end{macrocode}
 %
 % \DescribeMacro\IndexTerm \marg{term}
-% Performs any custom indexing of the term. Note that, as described below,
-% the macro |\mbk@termloc@|\meta{term} will be defined to have the page
-% number(s) on which the term is used, in the form of an |etoolbox| list.
 %
-% Initially, this macro does nothing.
+% Performs any custom indexing of the term. Initially, this macro does nothing.
 %
 %    \begin{macrocode}
 \def\IndexTerm#1{}
-%    \end{macrocode}
-%
-% \DescribeMacro\mbk@register@term\marg{term}\marg{page}
-% Used in the aux file, this macro indicates that \meta{term} was defined on
-% \meta{page}.
-%    \begin{macrocode}
-\def\mbk@register@term#1#2{%
-    \listcsadd{mbk@termloc@#1}{#2}%
-}
 %    \end{macrocode}
 %
 % \DescribeMacro\withterm\marg{term}\marg{do-with}\marg{do-without}
@@ -1217,10 +1201,10 @@
         \fi
         \global\let\mbk@expectnext\relax
     \fi
-    \global\@namedef{mbk@reg@#1#2}{}%
+    \global\@namedef{mbk@reg@#1/#2}{}%
     \global\@namedef{mbk@reg@#2}{}%
     \immediate\write\@auxout{%
-        \string\mbk@register@pre{#1#2}%
+        \string\mbk@register@pre{#1/#2}%
         \string\mbk@register@pre{#2}%
     }%
 }

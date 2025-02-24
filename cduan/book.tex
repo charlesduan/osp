@@ -23,6 +23,8 @@
 
 \usepackage[chapternotenums]{modbook}
 
+\RequirePackage[journalfonts,italcase,linkurl]{hicite}
+
 \repodir{cduan}{.}
 \repodir{base}{../base}
 
@@ -162,6 +164,16 @@ This build edited by Charles Duan}
 
 \backmatter
 
+\chapter{Table of URLs}
+
+\begingroup
+\footnotesize
+
+\TableOfUrls
+
+\endgroup
+
+
 \makeatletter
 \def\indexname{Index of Key Terms}
 \renewenvironment{theindex}
@@ -172,6 +184,7 @@ This build edited by Charles Duan}
                 \fi
                 \twocolumn[%
                     \@makechapterhead{\indexname}
+                    \addcontentsline{toc}{chapter}{Index of Key Terms}
 
                     This index covers key terms highlighted throughout the book.
                     It is not intended to be comprehensive, but may serve as a

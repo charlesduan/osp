@@ -9,3 +9,7 @@ test.*
 *.glo
 *.hd
 *.out
+*.idx
+*.ilg
+*.ind
+*.tou
