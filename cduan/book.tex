@@ -23,10 +23,16 @@
 
 \usepackage[chapternotenums]{modbook}
 
+\RequirePackage[journalfonts,italcase,linkurl]{hicite}
+
 \repodir{cduan}{.}
 \repodir{base}{../base}
 
 \RepositoryPath{cduan,base}
+
+\usepackage{makeidx}
+\makeindex
+\def\IndexTerm#1{\index{#1}}
 
 \usepackage{pdfoutline}
 
@@ -46,8 +52,8 @@ This build edited by Charles Duan}
 \sloppy
 \raggedbottom
 \frenchspacing
-\hbadness=9999                                                
-\parskip=0pt                                                  
+\hbadness=9999
+\parskip=0pt
 
 
 
@@ -155,5 +161,48 @@ This build edited by Charles Duan}
 
 \module regulatory-takings
 
+
+\backmatter
+
+\chapter{Table of URLs}
+
+\begingroup
+\footnotesize
+
+\TableOfUrls
+
+\endgroup
+
+
+\makeatletter
+\def\indexname{Index of Key Terms}
+\renewenvironment{theindex}
+               {\if@twocolumn
+                  \@restonecolfalse
+                \else
+                  \@restonecoltrue
+                \fi
+                \twocolumn[%
+                    \@makechapterhead{\indexname}
+                    \addcontentsline{toc}{chapter}{Index of Key Terms}
+
+                    This index covers key terms highlighted throughout the book.
+                    It is not intended to be comprehensive, but may serve as a
+                    useful study guide or test of your knowledge of property law
+                    words and phrases.
+
+                    \vskip\baselineskip
+]%
+                \@mkboth{\indexname}%
+                        {\indexname}%
+                \thispagestyle{plain}\parindent\z@
+                \parskip\z@ \@plus .3\p@\relax
+                \columnseprule \z@
+                \columnsep 35\p@
+                \let\item\@idxitem}
+               {\if@restonecol\onecolumn\else\clearpage\fi}
+\makeatother
+
+\printindex
 
 \end{document}

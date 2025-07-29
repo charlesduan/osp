@@ -1,6 +1,6 @@
 UNAME := $(shell uname)
 
-export TEXINPUTS := .:../modbook:$(HOME)/cdoc/texmf//:
+export TEXINPUTS := .:../modbook:$(HOME)/programs/hicite/gen:$(HOME)/cdoc/texmf//:
 
 ifeq ($(shell uname), Darwin)
     STAT=stat -f %m
