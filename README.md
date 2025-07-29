@@ -21,6 +21,7 @@ Charles Duan, and available under the GNU Public License 3.0. See the
 
 ## TL;DR: Building a Textbook
 
+Look in the directory `sample` for an example.
 Edit the file `book.tex` to your liking. Use the `\import [module]` command to
 import a module into the book as a chapter. The list of available modules is in
 the `base` directory. To generate a PDF, run `make` or `make book.pdf`.
