@@ -1,13 +1,37 @@
-An easement implied by existing use may arise when a parcel of land is divided
+An \term{easement implied by existing use} may arise when a parcel of land is
+divided
 and amenities once enjoyed by the whole parcel are now split up, such that in
 order to enjoy the amenity (a utility line, or a driveway, for example), one of
 the divided lots requires access to the other. Imagine, for example, a home
 connected to a city sewer line via a privately owned drainpipe, on a parcel that
 is later divided by carving out a portion of the lot between the original house
-and the sewer line connection, as shown in Figure~\ref{f:easements-img001}.
+and the sewer line connection, as shown in
+Figure~\ref{f:easements-existing-use}.
 
-\captionedgraphic{easements-img001}{A divided parcel of land with a sewer line
-running through both lots.}
+\begin{figure}
+\begin{center}
+\begin{tikzpicture}
+\draw (0, 0) rectangle (6, 3);
+\draw[dashed] (4, 0) -- (4, 3);
+\node[
+draw, single arrow, shape border rotate=90,
+single arrow tip angle=120,
+single arrow head extend=1pt,
+minimum width=2cm,
+minimum height=1.5cm,
+] (house) at (2, 1.5) {};
+\node[
+draw, cylinder, shape border rotate=90,
+minimum width=0.5cm, minimum height=3cm,
+aspect=0.6, anchor=west,
+] (pipe) at (7, 1.5) {};
+\draw[double, double distance=6pt, rounded corners] (house.south) |- (7, 0.5);
+\end{tikzpicture}
+\end{center}
+\caption{A divided parcel of land with a sewer line running through both lots.}
+\label{f:easements-existing-use}
+\end{figure}
+
 
 In such a situation, courts will frequently find an easement implied by prior
 existing use, allowing the owner of the house to continue using the drainpipe
