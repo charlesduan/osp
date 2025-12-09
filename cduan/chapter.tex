@@ -1,0 +1,61 @@
+\documentclass[12pt]{book}
+
+\usepackage{multivol}
+
+\usepackage[
+    paperheight=10in,
+    paperwidth=7in,
+    hmargin=1in,
+    vmargin=1.25in,
+]{geometry}
+
+\usepackage{linlib}
+\setsansfont[
+    Scale=MatchLowercase,
+    SmallCapsFeatures={Numbers=Proportional},
+    Extension=.otf,
+    Path=../fonts/,
+    UprightFont=*-Regular,
+    BoldFont=*-Bold,
+    BoldItalicFont=*-BoldIt,
+    ItalicFont=*-It,
+]{SourceSans3}
+
+\usepackage[chapternotenums]{modbook}
+
+\RequirePackage[journalfonts,italcase,linkurl]{hicite}
+
+\repodir{cduan}{.}
+\repodir{base}{../base}
+
+\RepositoryPath{cduan,base}
+
+\usepackage{makeidx}
+\makeindex
+\def\IndexTerm#1{\index{#1}}
+
+\usepackage{pdfoutline}
+
+\title{Frameworks of Property Law}
+\author{Stephen Clowney, James Grimmelmann, Michael Grynberg,\\
+Jeremy Sheff, and Rebecca Tushnet \\[12pt]
+This build edited by Charles Duan}
+\date{2026 Edition \\ Last updated \today}
+
+\providecommand\term[2][]{\textbf{#2}}
+
+\widowpenalty=10000
+\clubpenalty=10000
+
+\begin{document}
+
+\sloppy
+\raggedbottom
+\frenchspacing
+\hbadness=9999
+\parskip=0pt
+
+
+\module commons
+
+\end{document}
