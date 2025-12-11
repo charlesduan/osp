@@ -13,13 +13,39 @@ An example should illuminate the concepts.  Imagine that the Witch leases her
 Gingerbread Cottage to Hansel for a period of one year---January 1 to December
 31---in exchange for \$100 a month.  Four months into the lease, Hansel then
 transfers all of his remaining interest in the property to Gretel so that she
-now has exclusive possessory rights until the end of the term.  This transfer
+now has exclusive possessory rights until the end of the term.  This transfer,
+shown in the left part of Figure~\ref{f:lease-assignment},
 is an assignment because Hansel has no further rights in the property.  If
 Hansel had retained for himself the final two months of the lease or if he'd
 rented the cottage to Gretel for only the summer months, we would then
 categorize the agreement as a sublease.
 
-\heregraphic{leases-06}
+\usetikzlibrary{positioning,arrows.meta,quotes}
+\begin{figure}
+\begin{center}
+\begin{tikzpicture}
+\draw[
+    every node/.style={align=center},>=Stealth,->,
+    every edge quotes/.style={auto, node font=\itshape\small},
+]
+node (l) {\textbf{L} \\ (Witch)}
+node[below=of l] (t) {\textbf{T} \\ (Hansel)}
+node[right=1.5cm of t] (t2) {\textbf{T2} \\ (Gretel)}
+(l) edge["Lease"] (t)
+(t) edge["Assignment"] (t2)
+
+node[right=2cm of t2] (st) {\textbf{T} \\ (Hansel)}
+node[above=of st] (sl) {\textbf{L} \\ (Witch)}
+node[below=of st] (st2) {\textbf{T2} \\ (Gretel)}
+(sl) edge["Lease"] (st)
+(st) edge["Sublease"] (st2)
+;
+\end{tikzpicture}
+\end{center}
+\caption{Diagram of an assignment and sublease. Downward arrows will always
+represent (sub)leases, while rightward arrows will represent assignments.}
+\label{f:lease-assignment}
+\end{figure}
 
 A minority of jurisdictions takes a less formalistic approach to the
 assignment/sublease division.  In these states, the subjective intent of the
@@ -102,11 +128,33 @@ parties).  For all the remaining tenants ask, ``Who receives the property when
 this tenant's possessory rights finally end?''  Remember, parties with
 successive interests have privity of estate. 
 
+\begin{figure}
+\begin{center}
+\begin{tikzpicture}
+\draw[
+    every node/.style={align=center},>=Stealth,->,
+    every edge quotes/.style={auto, node font=\itshape\small},
+]
+node (l) {\textbf{L} \\ (Witch)}
+node[below=of l] (t) {\textbf{T} \\ (Hansel)}
+(l) edge["Lease"] (t)
+    edge[bend right=90, "Lease establishes\\privity of contract"
+        {left,align=right}, teal] (t)
+(t) edge[bend right=90, "{When T's rights end,\\L gets property
+        back,\\establishing privity\\of estate}" {right,align=left}, red] (l)
+;
+\end{tikzpicture}
+\end{center}
+\caption{Privity of contract and estate for leases.}
+\label{f:lease-privity}
+\end{figure}
+
 Although it may be redundant, a few diagrams may help clarify these
 relationships.  Assume that L leases an apartment to T.  Whenever a landlord
 initially leases to a tenant the two parties are in both privity of contract
-and privity of estate: 
-\heregraphic{leases-07}
+and privity of estate, as shown in Figure~\ref{f:lease-privity}.
+
+%\heregraphic{leases-07}
 L and T are in privity of contract because they agreed on a lease contract. To
 figure out the privity of estate relationships, we first ask if anyone has
 assigned their interest.  The answer here is ``no.''  For all remaining
@@ -116,9 +164,38 @@ when T's term concludes?  The answer, of course, is the landlord. T and L are
 in privity of estate because the landlord gets the property back from the
 tenant at the end of the lease.  
 
+\begin{figure}
+\begin{center}
+\begin{tikzpicture}
+\draw[
+    every node/.style={align=center},>=Stealth,->,
+    every edge quotes/.style={auto, node font=\itshape\small},
+]
+node (l) {\textbf{L} \\ (Witch)}
+node[below=of l] (t) {\textbf{T} \\ (Hansel)}
+node[right=1.5cm of t] (t2) {\textbf{T2} \\ (Gretel)}
+(l) edge["Lease"] (t)
+    edge[bend right=90, "Lease establishes\\privity of contract"
+        {left,align=right}, teal] (t)
+(t) edge["Assignment"] (t2)
+    edge[bend right=45, "Assignment establishes\\privity of contract" below,
+        teal] (t2)
+(t2) edge[bend right=45, "{When T2's rights end,\\L gets property
+        back,\\establishing privity\\of estate}" {above right,align=left}, red]
+        (l)
+;
+\end{tikzpicture}
+\end{center}
+\caption{Privity of contract and estate following an assignment.}
+\label{f:lease-privity-assignment}
+\end{figure}
+
 The relationships change if T assigns his rights to a new party, T2.  The
-diagram of an assignment is below:
-\heregraphic{leases-08}
+diagram of an assignment is in Figure~\ref{f:lease-privity-assignment}.
+
+
+
+%\heregraphic{leases-08}
 The contractual relationships are easy enough to map.  As discussed earlier,
 when T assigns his interest, he remains in privity of contract with L---they
 signed a rental agreement that has not expired.  T and T2 are also in privity
@@ -130,9 +207,40 @@ receives the property when this tenant's possessory rights finally end?'' When
 T2's possessory rights conclude, who takes control of the property? The answer
 is the landlord.  L and T2 now have a privity of estate relationship.  
 
-How do things change with a sublease?
-\heregraphic{leases-09}
-As before, T remains in privity of contract with L for the duration of the
+\begin{figure}
+\begin{center}
+\begin{tikzpicture}
+\draw[
+    every node/.style={align=center},>=Stealth,->,
+    every edge quotes/.style={auto, node font=\itshape\small},
+]
+node (l) {\textbf{L} \\ (Witch)}
+node[below=of l] (t) {\textbf{T} \\ (Hansel)}
+node[below=of t] (t2) {\textbf{T2} \\ (Gretel)}
+(l) edge["Lease"] (t)
+    edge[bend right=90, "Lease establishes\\privity of contract"
+        {left,align=right}, teal] (t.north west)
+(t) edge["Sublease"] (t2)
+    edge[bend right=90, "Sublease establishes\\privity of contract"
+        {left,align=right}, teal] (t2)
+(t2) edge[bend right=90, looseness=1.2, "{When T2's rights end,\\T gets property
+        back,\\establishing privity\\of estate}" {right,align=left}, red]
+        (t)
+;
+\draw[red,-Stealth,
+    every edge quotes/.style={auto, node font=\itshape\small},
+]
+(t.north east) to[bend right=90, "{When T's rights end,\\L gets property
+        back,\\establishing privity\\of estate}" {right,align=left}, red] (l)
+;
+\end{tikzpicture}
+\end{center}
+\caption{Privity of contract and estate following a sublease.}
+\label{f:lease-sublease-privity}
+\end{figure}
+
+How do things change with a sublease? In Figure~\ref{f:lease-sublease-privity},
+T remains in privity of contract with L for the duration of the
 original lease.  In this example, there are no assignments, so we begin by
 asking which parties have successive property interests.  When the possessory
 rights of T2 end, T will then have control over the property.  Thus T2 and T
