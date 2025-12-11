@@ -24,11 +24,13 @@
 %<package>\NeedsTeXFormat{LaTeX2e}
 %<package>\ProvidesPackage{modbook}
 %<*package>
-    [2024/01/09 v1.0.2 Module-based textbook]
+    [2025/12/11 v1.1.0 Module-based textbook]
 %</package>
 %<*driver>
 \documentclass{ltxdoc}
 \usepackage{doctools}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true}
 \EnableCrossrefs
 \RecordChanges
 \begin{document}
@@ -48,6 +50,7 @@
 % \changes{v1.0.2}{2024/03/12}{Adding deferrals and multiple choice}
 % \changes{v1.0.3}{2024/12/07}{Adding file editing}
 % \changes{v1.0.4}{2024/12/12}{Adding key term tracking}
+% \changes{v1.1.0}{2025/12/11}{Cross-references}
 %
 % \GetFileInfo{modbook.dtx}
 %
@@ -250,6 +253,11 @@
 % repository, rather than making a copy of the file. The following commands
 % enable this.
 %
+% Note that these commands do not |\import| the selected file, so the processes
+% of registration and tracking will not take place. This is appropriate because,
+% as a general matter, these editing commands will take place in the context of
+% another file being |\import|ed.
+%
 %
 % \DescribeMacro\editrepofile\marg{repo}\marg{mod}\marg{file}
 %
@@ -292,6 +300,8 @@
 %
 % \subsection{Cross-Reference Expectations}
 %
+% \label{s:crossrefs-iface}
+%
 % Content in modules will often cross-reference material in other modules. But
 % if the compiler can select and reorder the modules, these cross-references
 % will become unanchored. The package thus provides several macros to manage
@@ -307,6 +317,9 @@
 % Failures of any of the expectation assertions below will result in a warning
 % and an undefined-reference warning at the end of document compilation.
 %
+% See section~\ref{s:crossrefs} for the implementation of cross-reference
+% checking, in particular the actions taken for recording information as modules
+% are imported.
 %
 % \DescribeMacro\having \marg{filename} \marg{before} \marg{after} \marg{none}
 %
@@ -380,6 +393,29 @@
 %    \begin{macrocode}
 \def\expectnext#1{%
     \gdef\mbk@expectnext{#1}%
+}
+\let\mbk@expectnext\relax
+%    \end{macrocode}
+%
+% \DescribeMacro\mref \marg{filename}
+%
+% Produces a cross-reference text for the given file. If the file is a reading,
+% then the cross-reference points to it and uses the reading's name. If it is a
+% question set, then use the page number. Otherwise,
+% the cross-reference points to the closest chapter or section number (and
+% includes the word ``Chapter'').
+%
+%    \begin{macrocode}
+\def\mref#1{%
+    \@ifundefined{r@modr:#1}{%
+        \find@in{-qs}{#1}{%
+            p.~\pageref{mod:#1}\@gobble
+        }{%
+            Chapter~\ref{mod:#1}%
+        }%
+    }{%
+        \ref{modr:#1}%
+    }%
 }
 \let\mbk@expectnext\relax
 %    \end{macrocode}
@@ -534,6 +570,7 @@
                 \mbk@reading[#1]{#2\edfootnote{\mbk@readingnote}}%
                 \global\let\mbk@readingnote\relax
             }%
+            \mbk@register@reading{#1}%
         }%
     }%
 }
@@ -541,7 +578,8 @@
 \make@find@start{In re }
 %    \end{macrocode}
 %
-% Sectioning and Table of Contents format for readings.
+% Readings are treated as a form of LaTeX section,using |\@startsection|. They
+% have table of contents level 4.
 %
 %    \begin{macrocode}
 \newcommand\mbk@reading{\@startsection{reading}{4}{\z@}%
@@ -1049,11 +1087,25 @@
 %
 % \DescribeMacro\mbk@import \marg{module} \marg{filename}
 %
-% Imports where a module name is given.
+% Imports a file in a module, by trying all the repos in the path. If the file
+% is not found, then issue an error message.
+%
+% If the file is found, the following actions are be taken to cause the file
+% importation:
+% \begin{itemize}
+% \item The appropriate font is selected (section~\ref{s:fonts}). This must be
+% done first because registration depends on it.
+% \item The file is registered for cross-reference checking
+% (section~\ref{s:crossrefs})
+% \item The module is added to the stack of modules (section~\ref{s:modstack})
+% \item The file is read into input
+% \item Any |\ModuleEndHook| is executed
+% \item The module is removed from the stack
+% \end{itemize}
 %
 %    \begin{macrocode}
 \def\mbk@import#1#2{%
-    \mbk@try@modfile{#1}{#2}%
+    \expandafter\mbk@import@frompath\mbk@repo@path,\@nil{#1}{#2}%
     \mbk@try@file@default
     \PackageError{modbook}{No file `#1/#2.tex' found}{%
         Check that the file exists%
@@ -1063,28 +1115,30 @@
 %    \end{macrocode}
 %
 %
-% \DescribeMacro\mbk@try@modfile \marg{module} \marg{filename}
+% \DescribeMacro\mbk@import@frompath
+% \meta{repo},\meta{rest-of-path}\ldots|\@nil| \marg{module} \marg{filename}
 %
-% Tries to find a module file, across all the repositories.
+% Tries to find a file \meta{repo}/\meta{module}/\meta{filename}. If this fails,
+% continue trying with \meta{rest-of-path} if present; otherwise fall through to
+% the default condition previously set. This uses the |\mbk@try@file| mechanism.
 %
 %    \begin{macrocode}
-\def\mbk@try@modfile#1#2{%
-    \expandafter\mbk@try@modfile@\mbk@repo@path,\@nil{#1}{#2}%
-}
-\def\mbk@try@modfile@#1,#2\@nil#3#4{%
+\def\mbk@import@frompath#1,#2\@nil#3#4{%
     \mbk@try@file{\mbk@repo{#1}/#3/#4}{%
+        \mbk@formatting@for{#4}%
         \mbk@register@file{#3}{#4}% Precedes setting of \mbk@current@file
         \mbk@push{#1}{#3}{#4}%
-        \mbk@formatting@for{#4}%
         \@@input \mbk@repo{#1}/#3/#4 %
         \ifx\mbk@current@mod\mbk@current@file \ModuleEndHook \fi
         \mbk@pop
     }%
-    \ifstrempty{#2}{}{\mbk@try@modfile@#2\@nil{#3}{#4}}%
+    \ifstrempty{#2}{}{\mbk@import@frompath#2\@nil{#3}{#4}}%
 }
 %    \end{macrocode}
 %
 % \subsection{Tracking the Current Module and File}
+%
+% \label{s:modstack}
 %
 % Module imports are tracked via a stack, so it is always possible to know which
 % module is in current use. (The normal TeX grouping mechanism cannot be used,
@@ -1147,6 +1201,21 @@
 %
 % \subsection{File Inclusion}
 %
+% For modules and images, there are often a couple of different possible
+% filenames to be tried, and the first one that exists is to be used. The file
+% inclusion command pattern below allows for doing this. The usage is:
+% \begin{quote}
+% |\mbk@try@file|\marg{filename}\marg{content if file exists} \\
+% |\mbk@try@file|\marg{filename}\marg{content if file exists} \\
+% \ldots \\
+% |\mbk@try@file@default|\marg{content if no file exists} \\
+% |\mbk@try@file@end|
+% \end{quote}
+% Once a matching file is found, then all subsequent |\mbk@try@file| and other
+% content up to |\mbk@try@file@end| is discarded. Note that this system does not
+% actually include the found file; it is up to the \meta{content} arguments to
+% do that work.
+%
 % \DescribeMacro\mbk@try@file \marg{filename} \marg{content}
 %
 % Tries including a file among several. Several |\mbk@try@file| commands may be
@@ -1176,13 +1245,36 @@
 %    \end{macrocode}
 %
 %
-% \subsection{Cross-Reference Checking}
+% \subsection{Cross-Reference Recordation}
+%
+% The following macros manage recordation of information that is used for
+% cross-reference checking. See section~\ref{s:crossrefs-iface} for the user
+% interface of assertions and commands used in modules to check
+% cross-references.
+%
+% \label{s:crossrefs}
 %
 % \DescribeMacro\mbk@register@file\marg{module} \marg{filename}
 %
 % To implement cross-reference checking, every file is ``registered'' at
 % the time it is imported. The registration confirms any assertions that can be
-% determined upon registration, and records information for further checking.
+% determined upon registration, and records information for further checking. It
+% also creates a LaTeX cross-reference (using |\ref|) named
+% |mod:|\meta{filename}.
+%
+% Specifically, registration performs the following actions:
+% \begin{itemize}
+% \item Any |\expectnext| assertion is checked, and then reset.
+% \item A check is performed to see if a file of the same name was already
+% registered. If so, a warning is issued, since each file should be uniquely
+% named across all modules.
+% \item The |\ref| cross-reference is inserted, if the current file is not a
+% reading. (|\mbk@register@reading| will make cross-references for readings.)
+% \item A macro is defined recording that the file was imported.
+% \item Commands are writen to the aux file recording that the file was imported
+% (to support |\expecting| commands).
+% \end{itemize}
+%
 %
 %    \begin{macrocode}
 \def\mbk@register@file#1#2{%
@@ -1192,8 +1284,9 @@
             \def\reserved@a{#1/#2}%
             \ifx\reserved@a\mbk@expectnext\else
                 \PackageWarning{modbook}{%
-                    In file `\mbk@current@file',^^J%
-                    file `\mbk@expectnext' should have been included here,^^J%
+                    In file `\mbk@current@file',\MessageBreak
+                    file `\mbk@expectnext' should have been included
+                    here,\MessageBreak
                     but `#1/#2' was included instead%
                 }%
                 \G@refundefinedtrue
@@ -1201,6 +1294,15 @@
         \fi
         \global\let\mbk@expectnext\relax
     \fi
+    \@ifundefined{mbk@reg@#2}{%
+        \ifedmaterial \label{mod:#2}\fi
+    }{%
+        \PackageWarning{modbook}{%
+            A file named `#2.tex' was imported twice.\MessageBreak
+            This may be okay, but files should all have\MessageBreak
+            different names. This occured%
+        }%
+    }%
     \global\@namedef{mbk@reg@#1/#2}{}%
     \global\@namedef{mbk@reg@#2}{}%
     \immediate\write\@auxout{%
@@ -1220,8 +1322,22 @@
 }
 %    \end{macrocode}
 %
+% \DescribeMacro\mbk@register@reading\marg{short-name}
+%
+% Associates the reading's name with a LaTeX label, for cross-referencing
+% purposes. The label will be named |modr:|\meta{current-file}.
+%
+%    \begin{macrocode}
+\def\mbk@register@reading#1{%
+    \def\@currentlabel{#1}%
+    \label{modr:\mbk@current@file}%
+}
+%    \end{macrocode}
+%
 %
 % \subsection{Fonts}
+%
+% \label{s:fonts}
 %
 % \DescribeMacro\@defaultfamilyhook
 % This code hooks into the \LaTeX\ command that resets the default font, forcing
