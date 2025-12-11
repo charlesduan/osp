@@ -1,0 +1,28 @@
+\ProvidesPackage{flowchart}
+\RequirePackage{tikz}
+\usetikzlibrary{positioning,quotes,arrows.meta}
+%
+% Creates a flowchart. To add blocks, use the command \blocks followed by one or
+% more node declarations and a semicolon.
+% 
+\newenvironment{flowchart}{%
+    \begin{center}%
+    \begin{tikzpicture}[
+        every edge quotes/.style={auto, node font=\itshape\small},
+        >=Stealth,
+    ]
+    \def\blocks{\path[every node/.style={draw, align=center}]}
+    \def\conn[##1] ##2 to ##3;{\path[draw, ->] (##2) edge[##1] (##3);}
+    \def \hvconn[##1] ##2 to ##3;{%
+        \path[draw,->,to path={-| (\tikztotarget) \tikztonodes}]
+        (##2) edge[##1] (##3);%
+    }%
+    \def \vhconn[##1] ##2 to ##3;{%
+        \path[draw,->,to path={|- (\tikztotarget) \tikztonodes}]
+        (##2) edge[##1] (##3);%
+    }%
+}{%
+    \end{tikzpicture}
+    \end{center}
+}
+\endinput

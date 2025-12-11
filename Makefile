@@ -1,6 +1,7 @@
 UNAME := $(shell uname)
 
-export TEXINPUTS := .:./modbook:texmf//:
+MAINDIR := $(shell realpath $(shell dirname $(lastword $(MAKEFILE_LIST))))
+export TEXINPUTS := .:$(MAINDIR)/modbook:$(MAINDIR)/texmf//:
 
 ifeq ($(shell uname), Darwin)
     STAT=stat -f %m

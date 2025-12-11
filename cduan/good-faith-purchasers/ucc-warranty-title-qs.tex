@@ -1,0 +1,124 @@
+\expected{ucc-warranty-title}
+
+\item What was given above was a statutory text.\footnote{More precisely, it is
+a model statute that has been adopted in just about every state.} You need to
+read these
+\emph{extremely carefully}, because they are not like cases. A judicial opinion
+contains both rules and explanatory reasoning to help readers understand the
+rule. Plus, judges often like to repeat themselves, so legal rules may be
+stated multiple times throughout an opinion. So even if you read quickly,
+there's a good chance you'll pick up on the key doctrines at some point in an
+opinion. Statutes, on the other hand, are typically all rule and no explanation.
+Every word is significant.
+
+When reading a statute, you have two main objectives. First, you need to
+identify the elements; second, you need to determine the statute's mechanics.
+
+\item \textbf{Elements}. These are key terms that require interpretation and
+match fact patterns. They are like the elements of common-law rules, but there
+is even less room for imprecision with statutory elements.
+
+In some cases, the definition of key terms is given elsewhere in the statute,
+perhaps in a ``definitions'' section. In that case, you'll need to repeat the
+process because the definition text will have more elements to be interpreted.
+In other cases, the statute will leave terms undefined. In that case, it is the
+job of a court (and, by extension, the lawyers predicting what a court will do)
+to ``construe'' the terms' meanings through the logic of the statutory text,
+case law, and other arguments.
+
+A helpful hint: elements are typically nouns or noun phrases, though not always.
+Sometimes the noun phrase can be very long (say, if a statute recites a list of
+things). In that case, it can be helpful to invent an abbreviation or two as a
+placeholder for the element---just remember that the abbreviation is for your
+personal use only, and you should always use the original statutory text in
+writing.
+
+\expected{intro-adverse-possession}
+
+\item \textbf{Mechanics}. This is how the elements work together to produce
+legal results, like liability or rights. Any given fact pattern will give you
+yes-no answers for each element---either an element is present in the facts, or
+it isn't. Obviously, the yes-no answers will be the subject of intense debate
+between the parties and their lawyers. But once a court arrives at an answer for
+each element, the mechanics of the statute tell you the consequences. The
+mechanics are the flowchart or decision process that turns elements into
+results.
+
+Common-law rules (think adverse possession, or tort negligence) typically have
+simple mechanics: ``If A, B, and C, then D.'' The consequence is D, which
+happens only if A, B, and C are true for a given set of facts. But statutes (and
+some judicial rules) can be more intricate, with exceptions or multi-part
+decision pathways.
+
+Again, a helpful hint is that the words that join the noun phrases in a statute
+will tend to define the mechanics. Prepositional phrases show how
+elements are connected. Verbs will separate the requirements of the legal test
+(the ``if'' part) from the consequences (the ``then'' part). Be aware, though,
+that sometimes the mechanics of a statute are not explicit in its words---they
+may be implied through the sentence structure or organization.
+
+\item Let's try this out on the second sentence of \S~2-403(1). (The first
+sentence is hopefully pretty obvious in meaning---if a person buys goods from
+another, the buyer gets all the property rights of the seller unless the seller
+gives them only a ``limited interest'' like a bailment.)
+
+\expectnext{kotis-v-nowlin}
+
+First, pull out the noun phrases:
+\begin{enumerate}
+\item person with voidable title
+\item power to transfer a good title
+\item voidable title (sometimes there's an element inside an element)
+\item good title
+\item good faith purchaser for value
+\end{enumerate}
+What do these phrases mean? We don't know yet. The case that follows will give
+us some definitions, but let's see what we can discern from the statute alone.
+The term ``good title'' probably means full ownership, just by its plain
+meaning. A ``person with voidable title'' must be someone with some level of
+ownership less than that. The term ``power to transfer a good title'' shows up
+in the third sentence (``such power''), so that sentence will hopefully give us
+some insight, both into what the power is and the nature of the person holding
+such power, namely the ``person with voidable title.'' And the words of ``good
+faith purchaser for value'' tell us a lot---the person must purchase the good,
+pay value for it, and have ``good faith'' (whatever that means).
+
+\begin{figure}
+\begin{flowchart}
+\blocks
+node (vt) {Seller is ``person\\with voidable title''?}
+node[below=of vt] (gfp) {Buyer is ``good faith\\purchaser for value''?}
+node[right=of gfp] (gt) {Buyer gets\\``good title''}
+node[left=of gfp] (def) {Apply general rule\\(sentence 1)}
+;
+\conn["Yes"] vt to gfp;
+\hvconn["No" near start] vt to def;
+\conn["Yes"] gfp to gt;
+\conn["No" above] gfp to def;
+\end{flowchart}
+\caption{Flowchart of UCC \S~2-403(1), sentence 2.}
+\label{f:ucc-2-403-flowchart}
+\end{figure}
+
+The next step (which, you'll notice, can be done even if you don't yet know what
+the elements mean) is to work out the mechanics. The verb ``has'' connects the
+person with voidable title to the power; the preposition ``to'' connects the
+good title with the good-faith purchaser for value. In other words: \textbf{if}
+A is a ``person with voidable title'' \textbf{and} B is a ``good faith purchaser
+for value'', \textbf{then} A has the ``power to transfer a good title'' to B, so
+B ends up with good title. Also, the first sentence of \S~2-403(1) is a general
+rule, while the second sentence is more specific. This suggests that the second
+sentence is an exception to the first. So if B is not a good faith
+purchaser, then the first sentence's general rule applies (so B would get A's
+voidable title, or whatever else A had). This is shown in
+Figure~\ref{f:ucc-2-403-flowchart}.
+
+\item You may have found this analysis overkill for a reasonably simple
+sentence. But you will run into statutes with more elements and more intricate
+mechanics. Rigorously follow this procedure, and you will have a strong grasp
+for how any statute works and how to use it.
+
+Try it out now. What's going on in the third sentence of \S~2-403(1)? Who is the
+``purchaser''? (Hint: it's not the ``good faith purchaser'' of the second
+sentence.) What is required to have ``such power,'' which we identified above as
+``the power to transfer a good title''?
