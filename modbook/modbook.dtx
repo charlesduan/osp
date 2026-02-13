@@ -809,20 +809,21 @@
 \newif\ifedmaterial
 %    \end{macrocode}
 %
-% \DescribeMacro\HeaderFonts \marg{pagenum} \marg{left} \marg{right}
+% \DescribeMacro\HeaderFonts \marg{pagenum} \marg{num} \marg{title} \marg{right}
 %
 % Sets the fonts for the running header. As described below in the
-% Implementation section, the running header consists of a chapter name on the
-% left and the current reading on the right. By default, sans serif fonts are
-% used, with the chapter set in small caps.
+% Implementation section, the running header consists of a chapter number and
+% name on the left and the current reading on the right. By default, sans serif
+% fonts are used, with the chapter number and name set in small caps.
 %
 %    \begin{macrocode}
-\def\HeaderFonts#1#2#3{%
+\def\HeaderFonts#1#2#3#4{%
     \gdef\mbk@page@headerfont{#1}%
-    \gdef\mbk@left@headerfont{#2}%
-    \gdef\mbk@right@headerfont{#3}%
+    \gdef\mbk@left@numfont{#2}%
+    \gdef\mbk@left@titlefont{#3}%
+    \gdef\mbk@right@headerfont{#4}%
 }
-\HeaderFonts{\sffamily}{\sffamily\scshape}{\sffamily}
+\HeaderFonts{\sffamily}{\sffamily\scshape}{\sffamily\scshape}{\sffamily}
 %    \end{macrocode}
 %
 % \DescribeMacro \SectionFont \marg{font}
@@ -1410,7 +1411,7 @@
     \def\@evenhead{%
         {\mbk@page@headerfont{\thepage}}%
         \hfil
-        {\mbk@left@headerfont{\leftmark}}%
+        \leftmark
     }%
     \def\@oddhead{%
         {\mbk@right@headerfont{\rightmark}}%
@@ -1421,9 +1422,11 @@
     \def\chaptermark##1{%
         \markboth{%
             \ifnum \c@secnumdepth >\m@ne
-                \if@mainmatter \@chapapp\ \thechapter. \ \fi
+                \if@mainmatter
+                    {\mbk@left@numfont{\@chapapp\ \thechapter.}} \ 
+                \fi
             \fi
-            ##1%
+            {\mbk@left@titlefont{##1}}%
         }{}%
     }%
     \def\sectionmark##1{%
