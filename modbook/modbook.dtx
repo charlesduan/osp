@@ -266,6 +266,7 @@
 %
 %    \begin{macrocode}
 \def\editrepofile#1#2#3{%
+    \mbk@acct{edit}{#1}{#3}{#4}%
     \editfile{\mbk@repo{#1}/#2/#3}%
 }
 %    \end{macrocode}
@@ -420,6 +421,64 @@
 \let\mbk@expectnext\relax
 %    \end{macrocode}
 %
+% \subsection{Module Metadata and Accounting}
+%
+% Each module in a repository may have a file |metadata.tex| that contains
+% author and modification date information about the module. The following code
+% enables tracking of which modules are loaded, along with their metadata.
+%
+% \LaTeX\ hooks are used to enable accounting actions. The following are
+% provided:
+% \begin{itemize}
+% \item \texttt{account}: A generic hook executed for all accounting actions.
+% \item \texttt{import}: Executed when a module file is imported.
+% \item \texttt{edit}: Executed when a module file loads another file for
+% editing. The variables are set based on the underlying file to be edited.
+% \end{itemize}
+%
+%    \begin{macrocode}
+\NewHook{modbook/edit}
+\NewHook{modbook/import}
+\NewHook{modbook/account}
+%    \end{macrocode}
+%
+%
+% Each hook is executed within a group, and the following macros are defined in
+% that group to provide information on the module.
+% \begin{itemize}
+% \item |\action|: The action performed (edit, import).
+% \item |\repo|: The repository name.
+% \item |\module|: The module name.
+% \item |\filename|: The filename of the file being loaded.
+% \item |\modauthor|: If a metadata file is present, the name of the author of
+% the module as listed in that file.
+% \item |\moddate|: If a metadata file is present, the date of the module as
+% listed in that file.
+% \end{itemize}
+% Generally, the group will contain any macros defined in |metadata.txt| for the
+% module of the file being loaded.
+%
+% \DescribeMacro\mbk@acct \marg{action}\marg{repo}\marg{module}\marg{file}
+%
+% Accounts for an action taken on a file.
+%
+%    \begin{macrocode}
+\def\mbk@acct#1#2#3#4{%
+    \begingroup
+        \def\action{#1}%
+        \def\repo{#2}%
+        \def\module{#3}%
+        \def\filename{#4}%
+        \openin\@inputcheck"\mbk@repo{#2}/#3/metadata.tex"
+        \@test\ifeof\@inputcheck\fi{}{%
+            \closein\@inputcheck
+            \@@input \mbk@repo{#2}/#3/metadata.tex
+        }%
+        \UseHook{modbook/account}%
+        \UseHook{modbook/\action}%
+    \endgroup
+}
+%    \end{macrocode}
 %
 % \section{Key Terms}
 %
@@ -1129,6 +1188,7 @@
         \mbk@formatting@for{#4}%
         \mbk@register@file{#3}{#4}% Precedes setting of \mbk@current@file
         \mbk@push{#1}{#3}{#4}%
+        \mbk@acct{import}{#1}{#3}{#4}%
         \@@input \mbk@repo{#1}/#3/#4 %
         \ifx\mbk@current@mod\mbk@current@file \ModuleEndHook \fi
         \mbk@pop
