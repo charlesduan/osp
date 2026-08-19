@@ -27,6 +27,10 @@
 
 \usepackage[chapternotenums]{modbook}
 
+\CollectModules
+\CollectModuleFiles
+\CollectModuleAuthors
+
 \HeaderFonts{\sffamily}{\sffamily}{\sffamily\scshape}{\sffamily}
 
 \RequirePackage[journalfonts,italcase,linkurl]{hicite}
@@ -181,6 +185,61 @@ Based on \emph{Open Source Property} \\ by Stephen Clowney, James Grimmelmann,
 
 \endgroup
 
+
+\chapter{Module and Author Listing}
+
+\begingroup
+
+\tiny
+
+\begin{list}{}{%
+\itemsep=0pt
+\labelsep=0pt
+\labelwidth=0pt
+\leftmargin=0pt
+\listparindent=0pt
+\parsep=0pt
+\partopsep=0pt
+\rightmargin=0pt
+\topsep=0pt
+}
+
+\def\do#1{\doo#1\stop}
+\def\doo#1/#2\stop{%
+    \item Module #2, from #1%
+    \begin{list}{}{%
+    \itemsep=0pt
+    \labelsep=0pt
+    \labelwidth=0pt
+    \leftmargin=2em
+    \listparindent=0pt
+    \parsep=0pt
+    \partopsep=0pt
+    \rightmargin=0pt
+    \topsep=0pt
+    }
+    \def\do##1{\doo##1\stop}
+    \def\doo##1/##2/##3\stop{%
+        \item
+        \def\testa{#2}\def\testb{##2}%
+        \ifx\testa\testb\else ##2/\fi
+        ##3%
+        \def\testa{#1}\def\testb{##1}%
+        \ifx\testa\testb\else , from ##1\fi
+        \ifcsdef{mbk@metaauthor@##1/##2/##3}{%
+            , by \csname mbk@metaauthor@##1/##2/##3\endcsname
+        }{}%
+        \ifcsdef{mbk@metadate@##1/##2/##3}{%
+            \space(\csname mbk@metadate@##1/##2/##3\endcsname)%
+        }{}%
+    }%
+    \dolistcsloop{ModuleFiles@#2}%
+    \end{list}
+}
+\dolistloop{\ModuleList}
+\end{list}
+
+\endgroup
 
 \makeatletter
 \def\indexname{Index of Key Terms}

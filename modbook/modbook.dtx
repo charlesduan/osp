@@ -237,16 +237,6 @@
 %    \end{macrocode}
 %
 %
-% \DescribeMacro\ModuleEndHook
-% When importing a complete module, the contents of this macro will be executed
-% at the end of reading the module. By default, this is used to execute
-% |\showquestions|, but other features may be implemented.
-%
-%    \begin{macrocode}
-\def\ModuleEndHook{\showquestions}
-%    \end{macrocode}
-%
-%
 % \subsection{Editing Modules}
 %
 % It may be desirable to edit a file in a module from this repository or another
@@ -266,8 +256,9 @@
 %
 %    \begin{macrocode}
 \def\editrepofile#1#2#3{%
-    \mbk@acct{edit}{#1}{#3}{#4}%
+    \mbk@acct{edit}{#1}{#2}{#3}%
     \editfile{\mbk@repo{#1}/#2/#3}%
+    \mbk@acct{endedit}{#1}{#2}{#3}%
 }
 %    \end{macrocode}
 %
@@ -421,7 +412,7 @@
 \let\mbk@expectnext\relax
 %    \end{macrocode}
 %
-% \subsection{Module Metadata and Accounting}
+% \section{Module Metadata and Accounting}
 %
 % Each module in a repository may have a file |metadata.tex| that contains
 % author and modification date information about the module. The following code
@@ -430,16 +421,23 @@
 % \LaTeX\ hooks are used to enable accounting actions. The following are
 % provided:
 % \begin{itemize}
-% \item \texttt{account}: A generic hook executed for all accounting actions.
+% \item \texttt{module}: Executed when a module is imported.
 % \item \texttt{import}: Executed when a module file is imported.
 % \item \texttt{edit}: Executed when a module file loads another file for
 % editing. The variables are set based on the underlying file to be edited.
+% \item \texttt{end*}: Each hook has a corresponding hook executed when the
+% action is completed.
 % \end{itemize}
+% Every hook receives three arguments: the repo name, the module name, and the
+% file name.
 %
 %    \begin{macrocode}
-\NewHook{modbook/edit}
-\NewHook{modbook/import}
-\NewHook{modbook/account}
+\NewHookWithArguments{modbook/module}{3}
+\NewHookWithArguments{modbook/edit}{3}
+\NewHookWithArguments{modbook/import}{3}
+\NewHookWithArguments{modbook/endmodule}{3}
+\NewHookWithArguments{modbook/endedit}{3}
+\NewHookWithArguments{modbook/endimport}{3}
 %    \end{macrocode}
 %
 %
@@ -460,25 +458,154 @@
 %
 % \DescribeMacro\mbk@acct \marg{action}\marg{repo}\marg{module}\marg{file}
 %
-% Accounts for an action taken on a file.
+% Accounts for an action taken on a file, by executing the hook for
+% \meta{action} with the remaining arguments passed to the hook.
 %
 %    \begin{macrocode}
 \def\mbk@acct#1#2#3#4{%
-    \begingroup
-        \def\action{#1}%
-        \def\repo{#2}%
-        \def\module{#3}%
-        \def\filename{#4}%
-        \openin\@inputcheck"\mbk@repo{#2}/#3/metadata.tex"
-        \@test\ifeof\@inputcheck\fi{}{%
-            \closein\@inputcheck
-            \@@input \mbk@repo{#2}/#3/metadata.tex
-        }%
-        \UseHook{modbook/account}%
-        \UseHook{modbook/\action}%
-    \endgroup
+    \UseHookWithArguments{modbook/#1}{3}{#2}{#3}{#4}%
 }
 %    \end{macrocode}
+%
+% \subsection{Metadata Files}
+%
+% The following macros define the metadata for a file:
+% \begin{itemize}
+% \item |\modauthor|: The author of the module or file
+% \item |\moddate|: The author of the module or file
+% \end{itemize}
+% These macros may be given in a |metadata.txt| file to indicate general
+% authorship over a module, or within an individual file to indicate authorship
+% of that specific file. When either of these macros is encountered, it sets a
+% macro of the form:
+% \begin{quote}
+% |\mbk@meta|[|author|$\|$|date|]|@|\meta{repo}|/|\meta{module}|/|\meta{file}
+% \end{quote}
+% to the given file. The last set value is the author/date of the given file.
+%
+% Hooks are installed to read the metadata files and place the metadata in
+% appropriate places.
+%
+%    \begin{macrocode}
+\AddToHookWithArguments{modbook/module}{%
+    \def\modauthor##1{\mbk@setmeta{#1}{#2}{#3}{author}{##1}}%
+    \def\moddate##1{\mbk@setmeta{#1}{#2}{#3}{date}{##1}}%
+    \mbk@read@metadata{#1}{#2}{#3}%
+}
+\AddToHookWithArguments{modbook/import}{%
+    \def\modauthor##1{\mbk@setmeta{#1}{#2}{#3}{author}{##1}}%
+    \def\moddate##1{\mbk@setmeta{#1}{#2}{#3}{date}{##1}}%
+    \mbk@read@metadata{#1}{#2}{#3}%
+}%
+\AddToHookWithArguments{modbook/edit}{%
+    \def\modauthor##1{\mbk@setmeta{#1}{#2}{#3}{author}{##1}}%
+    \def\moddate##1{\mbk@setmeta{#1}{#2}{#3}{date}{##1}}%
+    \mbk@read@metadata{#1}{#2}{#3}%
+}%
+\def\mbk@read@metadata#1#2#3{%
+    \openin\@inputcheck"\mbk@repo{#1}/#2/metadata.tex"
+    \@test\ifeof\@inputcheck\fi{}{%
+        \closein\@inputcheck
+        \@@input \mbk@repo{#1}/#2/metadata.tex
+    }%
+}
+\def\mbk@setmeta#1#2#3#4#5{%
+    \global\@namedef{mbk@meta#4@#1/#2/#3}{#5}%
+}
+%    \end{macrocode}
+% 
+% \subsection{Some Accounting Hooks}
+%
+% \DescribeMacro\TraceImports
+% Prints to the console as modules and files are imported.
+%
+%    \begin{macrocode}
+\def\TraceImports{%
+    \def\mbk@trace@prefix{}
+    \def\mbk@trace@push{\xdef\mbk@trace@prefix{.\mbk@trace@prefix}}
+    \def\mbk@trace@pop{%
+        \xdef\mbk@trace@prefix{\expandafter\@gobble\mbk@trace@prefix}%
+    }%
+    \AddToHookWithArguments{modbook/module}{%
+        \immediate\write16{+\mbk@trace@prefix Module ##1/##2/##3}%
+        \mbk@trace@push
+    }%
+    \AddToHookWithArguments{modbook/import}{%
+        \immediate\write16{+\mbk@trace@prefix File ##1/##2/##3}%
+        \mbk@trace@push
+    }%
+    \AddToHookWithArguments{modbook/edit}{%
+        \immediate\write16{+\mbk@trace@prefix Edit ##1/##2/##3}%
+        \mbk@trace@push
+    }%
+    \AddToHook{modbook/endmodule}{\mbk@trace@pop}%
+    \AddToHook{modbook/endimport}{\mbk@trace@pop}%
+    \AddToHook{modbook/endedit}{\mbk@trace@pop}%
+    \let\TraceImports\relax
+}
+%    \end{macrocode}
+%
+% \DescribeMacro\CollectModules
+% Collects a list of modules loaded, into macro |\ModuleList|. The list is an
+% |etoolbox| internal list.
+%
+%    \begin{macrocode}
+\def\CollectModules{%
+    \let\ModuleList\@empty
+    \AddToHookWithArguments{modbook/module}{%
+        \listgadd\ModuleList{##1/##2}%
+    }%
+    \let\CollectModules\relax
+}
+%    \end{macrocode}
+%
+% \DescribeMacro\CollectModuleFiles
+% Collects a list of files imported, into macros named
+% |\ModuleFiles@|\meta{module}. The list is an |etoolbox| internal list. The
+% list elements are of the form \meta{repo}|/|\meta{module}|/|\meta{file}.
+%
+%    \begin{macrocode}
+\def\CollectModuleFiles{%
+    \AddToHookWithArguments{modbook/import}{%
+        \listcsxadd{ModuleFiles@\mbk@source@mod}{##1/##2/##3}%
+    }%
+    \AddToHookWithArguments{modbook/edit}{%
+        \listcsxadd{ModuleFiles@\mbk@source@mod}{##1/##2/##3}%
+    }%
+    \let\CollectModuleFiles\relax
+}
+%    \end{macrocode}
+%
+% \DescribeMacro\CollectModuleAuthors
+% Determines the authors of modules, based on the files imported therein. Each
+% author is added to a list named |\AuthorList@|\meta{module}. The list is an
+% |etoolbox| internal list.
+%
+%    \begin{macrocode}
+\def\CollectModuleAuthors{%
+    \AddToHookWithArguments{modbook/endimport}{%
+        \mbk@collectmodauth{##1}{##2}{##3}%
+    }%
+    \AddToHookWithArguments{modbook/endedit}{%
+        \mbk@collectmodauth{##1}{##2}{##3}%
+    }%
+    \let\CollectModuleAuthors\relax
+}
+\def\mbk@collectmodauth#1#2#3{%
+    \@ifundefined{mbk@metaauthor@#1/#2/#3}{}{%
+        \@expand\mbk@collectmodauth@{%
+            \csname mbk@metaauthor@#1/#2/#3\endcsname
+        }{ii}%
+    }%
+}
+\def\mbk@collectmodauth@#1{%
+    % The current module may not be the same as the file module
+    \ifinlistcs{#1}{AuthorList@\mbk@source@mod}{}{%
+        \listcsgadd{AuthorList@\mbk@source@mod}{#1}%
+    }%
+}
+%    \end{macrocode}
+%
 %
 % \section{Key Terms}
 %
@@ -1158,8 +1285,9 @@
 % \item The file is registered for cross-reference checking
 % (section~\ref{s:crossrefs})
 % \item The module is added to the stack of modules (section~\ref{s:modstack})
+% \item Any accounting hooks are executed for the start of the file
 % \item The file is read into input
-% \item Any |\ModuleEndHook| is executed
+% \item Any accounting hooks are executed for the end of the file
 % \item The module is removed from the stack
 % \end{itemize}
 %
@@ -1188,9 +1316,17 @@
         \mbk@formatting@for{#4}%
         \mbk@register@file{#3}{#4}% Precedes setting of \mbk@current@file
         \mbk@push{#1}{#3}{#4}%
-        \mbk@acct{import}{#1}{#3}{#4}%
+        \ifx\mbk@current@mod\mbk@current@file
+            \mbk@acct{module}{#1}{#3}{#4}%
+        \else
+            \mbk@acct{import}{#1}{#3}{#4}%
+        \fi
         \@@input \mbk@repo{#1}/#3/#4 %
-        \ifx\mbk@current@mod\mbk@current@file \ModuleEndHook \fi
+        \ifx\mbk@current@mod\mbk@current@file
+            \mbk@acct{endmodule}{#1}{#3}{#4}%
+        \else
+            \mbk@acct{endimport}{#1}{#3}{#4}%
+        \fi
         \mbk@pop
     }%
     \ifstrempty{#2}{}{\mbk@import@frompath#2\@nil{#3}{#4}}%
@@ -1206,10 +1342,15 @@
 % because otherwise content would be included inside groups.)
 %
 % \DescribeMacro\mbk@current@mod
-% The current module.
+% The current module of the file being read. This may not be the same as the
+% module that imported the file.
+%
+% \DescribeMacro\mbk@source@mod
+% The module that is the source of the files currently being imported.
 %
 %    \begin{macrocode}
 \def\mbk@current@mod{}
+\def\mbk@source@mod{}
 %    \end{macrocode}
 %
 % \DescribeMacro\mbk@current@file
@@ -1237,6 +1378,9 @@
     \edef\mbk@current@repo{#1}%
     \edef\mbk@current@mod{#2}%
     \def\mbk@current@file{#3}%
+    \ifx\mbk@current@mod\mbk@current@file
+        \let\mbk@source@mod\mbk@current@mod
+    \fi
 }
 %    \end{macrocode}
 %
@@ -1255,6 +1399,9 @@
     \gdef\mbk@current@repo{#4}%
     \gdef\mbk@current@mod{#5}%
     \gdef\mbk@current@file{#6}%
+    \ifx\mbk@current@mod\mbk@current@file
+        \let\mbk@source@mod\mbk@current@mod
+    \fi
 }
 %    \end{macrocode}
 %

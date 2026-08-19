@@ -62,7 +62,7 @@
 \long\def\edf@read@append@#1#2{\long\def\edf@content{#1#2}}%
 \def\edf@initialize@instructions{%
 \long\def\atstart##1{%
-    \edef\edf@content{\unexpanded{##1}\expandonce\edf@content}%
+    \long\edef\edf@content{\unexpanded{##1}\expandonce\edf@content}%
 }
 \long\def\atend##1{%
     \long\expandafter\def\expandafter\edf@content\expandafter{%

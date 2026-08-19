@@ -47,9 +47,10 @@
     }%
 }
 \make@find@in{/}
-\def\ModuleEndHook{\showquestions}
 \def\editrepofile#1#2#3{%
+    \mbk@acct{edit}{#1}{#2}{#3}%
     \editfile{\mbk@repo{#1}/#2/#3}%
+    \mbk@acct{endedit}{#1}{#2}{#3}%
 }
 \def\editfromrepo#1{%
     \editrepofile{#1}\mbk@current@mod\mbk@current@file
@@ -108,6 +109,101 @@
     }%
 }
 \let\mbk@expectnext\relax
+\NewHookWithArguments{modbook/module}{3}
+\NewHookWithArguments{modbook/edit}{3}
+\NewHookWithArguments{modbook/import}{3}
+\NewHookWithArguments{modbook/endmodule}{3}
+\NewHookWithArguments{modbook/endedit}{3}
+\NewHookWithArguments{modbook/endimport}{3}
+\def\mbk@acct#1#2#3#4{%
+    \UseHookWithArguments{modbook/#1}{3}{#2}{#3}{#4}%
+}
+\AddToHookWithArguments{modbook/module}{%
+    \def\modauthor##1{\mbk@setmeta{#1}{#2}{#3}{author}{##1}}%
+    \def\moddate##1{\mbk@setmeta{#1}{#2}{#3}{date}{##1}}%
+    \mbk@read@metadata{#1}{#2}{#3}%
+}
+\AddToHookWithArguments{modbook/import}{%
+    \def\modauthor##1{\mbk@setmeta{#1}{#2}{#3}{author}{##1}}%
+    \def\moddate##1{\mbk@setmeta{#1}{#2}{#3}{date}{##1}}%
+    \mbk@read@metadata{#1}{#2}{#3}%
+}%
+\AddToHookWithArguments{modbook/edit}{%
+    \def\modauthor##1{\mbk@setmeta{#1}{#2}{#3}{author}{##1}}%
+    \def\moddate##1{\mbk@setmeta{#1}{#2}{#3}{date}{##1}}%
+    \mbk@read@metadata{#1}{#2}{#3}%
+}%
+\def\mbk@read@metadata#1#2#3{%
+    \openin\@inputcheck"\mbk@repo{#1}/#2/metadata.tex"
+    \@test\ifeof\@inputcheck\fi{}{%
+        \closein\@inputcheck
+        \@@input \mbk@repo{#1}/#2/metadata.tex
+    }%
+}
+\def\mbk@setmeta#1#2#3#4#5{%
+    \global\@namedef{mbk@meta#4@#1/#2/#3}{#5}%
+}
+\def\TraceImports{%
+    \def\mbk@trace@prefix{}
+    \def\mbk@trace@push{\xdef\mbk@trace@prefix{.\mbk@trace@prefix}}
+    \def\mbk@trace@pop{%
+        \xdef\mbk@trace@prefix{\expandafter\@gobble\mbk@trace@prefix}%
+    }%
+    \AddToHookWithArguments{modbook/module}{%
+        \immediate\write16{+\mbk@trace@prefix Module ##1/##2/##3}%
+        \mbk@trace@push
+    }%
+    \AddToHookWithArguments{modbook/import}{%
+        \immediate\write16{+\mbk@trace@prefix File ##1/##2/##3}%
+        \mbk@trace@push
+    }%
+    \AddToHookWithArguments{modbook/edit}{%
+        \immediate\write16{+\mbk@trace@prefix Edit ##1/##2/##3}%
+        \mbk@trace@push
+    }%
+    \AddToHook{modbook/endmodule}{\mbk@trace@pop}%
+    \AddToHook{modbook/endimport}{\mbk@trace@pop}%
+    \AddToHook{modbook/endedit}{\mbk@trace@pop}%
+    \let\TraceImports\relax
+}
+\def\CollectModules{%
+    \let\ModuleList\@empty
+    \AddToHookWithArguments{modbook/module}{%
+        \listgadd\ModuleList{##1/##2}%
+    }%
+    \let\CollectModules\relax
+}
+\def\CollectModuleFiles{%
+    \AddToHookWithArguments{modbook/import}{%
+        \listcsxadd{ModuleFiles@\mbk@source@mod}{##1/##2/##3}%
+    }%
+    \AddToHookWithArguments{modbook/edit}{%
+        \listcsxadd{ModuleFiles@\mbk@source@mod}{##1/##2/##3}%
+    }%
+    \let\CollectModuleFiles\relax
+}
+\def\CollectModuleAuthors{%
+    \AddToHookWithArguments{modbook/endimport}{%
+        \mbk@collectmodauth{##1}{##2}{##3}%
+    }%
+    \AddToHookWithArguments{modbook/endedit}{%
+        \mbk@collectmodauth{##1}{##2}{##3}%
+    }%
+    \let\CollectModuleAuthors\relax
+}
+\def\mbk@collectmodauth#1#2#3{%
+    \@ifundefined{mbk@metaauthor@#1/#2/#3}{}{%
+        \@expand\mbk@collectmodauth@{%
+            \csname mbk@metaauthor@#1/#2/#3\endcsname
+        }{ii}%
+    }%
+}
+\def\mbk@collectmodauth@#1{%
+    % The current module may not be the same as the file module
+    \ifinlistcs{#1}{AuthorList@\mbk@source@mod}{}{%
+        \listcsgadd{AuthorList@\mbk@source@mod}{#1}%
+    }%
+}
 \newcommand\term[2][]{%
     \ifstrempty{#2}{}{\FormatTerm{#2}}%
     \ifstrempty{#1}{\mbk@term{#2}}{\mbk@term{#1}}%
@@ -256,12 +352,13 @@
 }
 \ReadingFont{\rmfamily}
 \newif\ifedmaterial
-\def\HeaderFonts#1#2#3{%
+\def\HeaderFonts#1#2#3#4{%
     \gdef\mbk@page@headerfont{#1}%
-    \gdef\mbk@left@headerfont{#2}%
-    \gdef\mbk@right@headerfont{#3}%
+    \gdef\mbk@left@numfont{#2}%
+    \gdef\mbk@left@titlefont{#3}%
+    \gdef\mbk@right@headerfont{#4}%
 }
-\HeaderFonts{\sffamily}{\sffamily\scshape}{\sffamily}
+\HeaderFonts{\sffamily}{\sffamily\scshape}{\sffamily\scshape}{\sffamily}
 \def\SectionFont#1{%
     \gdef\mbk@section@font{\normalfont#1}%
 }
@@ -385,13 +482,23 @@
         \mbk@formatting@for{#4}%
         \mbk@register@file{#3}{#4}% Precedes setting of \mbk@current@file
         \mbk@push{#1}{#3}{#4}%
+        \ifx\mbk@current@mod\mbk@current@file
+            \mbk@acct{module}{#1}{#3}{#4}%
+        \else
+            \mbk@acct{import}{#1}{#3}{#4}%
+        \fi
         \@@input \mbk@repo{#1}/#3/#4 %
-        \ifx\mbk@current@mod\mbk@current@file \ModuleEndHook \fi
+        \ifx\mbk@current@mod\mbk@current@file
+            \mbk@acct{endmodule}{#1}{#3}{#4}%
+        \else
+            \mbk@acct{endimport}{#1}{#3}{#4}%
+        \fi
         \mbk@pop
     }%
     \ifstrempty{#2}{}{\mbk@import@frompath#2\@nil{#3}{#4}}%
 }
 \def\mbk@current@mod{}
+\def\mbk@source@mod{}
 \let\mbk@current@file\relax
 \def\mbk@module@stack{{}{}{}}
 \def\mbk@push#1#2#3{%
@@ -399,6 +506,9 @@
     \edef\mbk@current@repo{#1}%
     \edef\mbk@current@mod{#2}%
     \def\mbk@current@file{#3}%
+    \ifx\mbk@current@mod\mbk@current@file
+        \let\mbk@source@mod\mbk@current@mod
+    \fi
 }
 \def\mbk@pop{%
     \expandafter\mbk@pop@\mbk@module@stack\@stop
@@ -408,6 +518,9 @@
     \gdef\mbk@current@repo{#4}%
     \gdef\mbk@current@mod{#5}%
     \gdef\mbk@current@file{#6}%
+    \ifx\mbk@current@mod\mbk@current@file
+        \let\mbk@source@mod\mbk@current@mod
+    \fi
 }
 \def\mbk@try@file#1#2{%
     \openin\@inputcheck"#1"
@@ -494,7 +607,7 @@
     \def\@evenhead{%
         {\mbk@page@headerfont{\thepage}}%
         \hfil
-        {\mbk@left@headerfont{\leftmark}}%
+        \leftmark
     }%
     \def\@oddhead{%
         {\mbk@right@headerfont{\rightmark}}%
@@ -505,9 +618,11 @@
     \def\chaptermark##1{%
         \markboth{%
             \ifnum \c@secnumdepth >\m@ne
-                \if@mainmatter \@chapapp\ \thechapter. \ \fi
+                \if@mainmatter
+                    {\mbk@left@numfont{\@chapapp\ \thechapter.}} \
+                \fi
             \fi
-            ##1%
+            {\mbk@left@titlefont{##1}}%
         }{}%
     }%
     \def\sectionmark##1{%

@@ -2,6 +2,7 @@
 
 ARGF.each do |line|
   dir, author, date = line.chomp.split(/\t/)
+  author.gsub!("-", " ")
   if File.directory?(dir)
     open("#{dir}/metadata.tex", 'w') do |f|
 
