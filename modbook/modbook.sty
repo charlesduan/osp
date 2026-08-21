@@ -460,6 +460,19 @@
   \vskip\belowcaptionskip}
 \def\GraphicsDirectory#1{\gdef\mbk@graphicsdir{#1}}
 \GraphicsDirectory{images}
+\def\comment#1{%
+    \edef\reserved@a{\mbk@current@repo/\mbk@current@mod/\mbk@current@file}%
+    \add@macro@to@macro\mbk@comments\reserved@a
+    \addto@macro\mbk@comments{:^^J\space\space\space\space#1^^J^^J}%
+}
+\let\mbk@comments\@empty
+\AtEndDocument{%
+    \ifx\mbk@comments\@empty\else
+        \PackageWarning{modbook}{%
+            The following comments were left in the book:^^J^^J\mbk@comments
+        }%
+    \fi
+}
 \DeferralSurround{mch@questions}{%
     \edfont
     \protected@edef\reserved@a{%

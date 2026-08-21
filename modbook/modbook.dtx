@@ -1236,6 +1236,33 @@
 %    \end{macrocode}
 %
 %
+% \subsection{Comments}
+%
+% A book may contain internal commentary that is not included in the book but
+% printed during compilation, at the end of the compilation. This is useful for
+% adding reminders or editorial notes.
+%
+% \DescribeMacro\comment\marg{text}
+% Inserts a comment. The current module and file are recorded along with the
+% comment, and the comment is deferred for printing until the end of
+% compilation.
+%
+%    \begin{macrocode}
+\def\comment#1{%
+    \edef\reserved@a{\mbk@current@repo/\mbk@current@mod/\mbk@current@file}%
+    \add@macro@to@macro\mbk@comments\reserved@a
+    \addto@macro\mbk@comments{:^^J\space\space\space\space#1^^J^^J}%
+}
+\let\mbk@comments\@empty
+\AtEndDocument{%
+    \ifx\mbk@comments\@empty\else
+        \PackageWarning{modbook}{%
+            The following comments were left in the book:^^J^^J\mbk@comments
+        }%
+    \fi
+}
+%    \end{macrocode}
+%
 %
 %
 %
