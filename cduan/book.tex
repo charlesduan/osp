@@ -30,6 +30,16 @@
 \CollectModules
 \CollectModuleAuthors
 
+\makeatletter
+\AddToHookWithArguments{modbook/endmodule}{%
+    \if@mainmatter
+        \expandafter\xdef\csname chapterfor@#2\endcsname{%
+            \thechapter
+        }%
+    \fi
+}
+\makeatother
+
 \HeaderFonts{\sffamily}{\sffamily}{\sffamily\scshape}{\sffamily}
 
 \RequirePackage[journalfonts,italcase,linkurl]{hicite}
@@ -68,7 +78,10 @@ Based on \emph{Open Source Property} \\ by Stephen Clowney, James Grimmelmann,
 
 \makevolume
 
-\tableofcontents
+\chapter{Contents}
+
+% The default mark formatting for \tableofcontents looks wrong
+\csname @starttoc\endcsname{toc}
 
 \module front-matter
 
@@ -175,6 +188,8 @@ Based on \emph{Open Source Property} \\ by Stephen Clowney, James Grimmelmann,
 
 \backmatter
 
+\input module-listing
+
 \chapter{Table of URLs}
 
 \begingroup
@@ -184,35 +199,6 @@ Based on \emph{Open Source Property} \\ by Stephen Clowney, James Grimmelmann,
 
 \endgroup
 
-
-\def\indexname{Index of Key Terms}
-\renewenvironment{theindex}
-               {\if@twocolumn
-                  \@restonecolfalse
-                \else
-                  \@restonecoltrue
-                \fi
-                \twocolumn[%
-                    \@makechapterhead{\indexname}
-                    \addcontentsline{toc}{chapter}{Index of Key Terms}
-
-                    This index covers key terms highlighted throughout the book.
-                    It is not intended to be comprehensive, but may serve as a
-                    useful study guide or test of your knowledge of property law
-                    words and phrases.
-
-                    \vskip\baselineskip
-]%
-                \@mkboth{\indexname}%
-                        {\indexname}%
-                \thispagestyle{plain}\parindent\z@
-                \parskip\z@ \@plus .3\p@\relax
-                \columnseprule \z@
-                \columnsep 35\p@
-                \let\item\@idxitem}
-               {\if@restonecol\onecolumn\else\clearpage\fi}
-\makeatother
-
-\printindex
+\input index
 
 \end{document}

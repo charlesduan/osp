@@ -1,8 +1,49 @@
+\chapter{Modules and Authors}
+
+The following lists the \emph{Open Source Property} modules used to generate
+this book, along with the authors/editors of the readings or materials contained
+in that module. The source code for the modules is available online:
+\url{https://github.com/charlesduan/osp}.
+
+\begingroup
+
+\footnotesize
+
+\makeatletter
+
+\def\do#1{\doo#1\stop}
+\def\doo#1/#2\stop{%
+    \vskip 6pt plus 2pt minus 1pt
+    \noindent
+    \@ifundefined{chapterfor@#2}{}{%
+        Chapter \csname chapterfor@#2\endcsname:
+    }%
+    Module \textit{#2}%
+    %, from repository \texttt{#1}%
+    \par
+    \@ifundefined{AuthorList@#2}{}{%
+        \nobreak
+        \bgroup
+            \leftskip=2em
+            \noindent
+            By
+            \sepforlistcsloop{\@iden}{ \& }{, }{ \& }{AuthorList@#2}%
+            \par
+        \egroup
+    }%
+}
+\dolistloop\ModuleList
+
+\makeatother
+
+\endgroup
+
+\endinput
+
+
 %
 % Inserts a full module listing. Requires calling \CollectModuleFiles
 %
-
-\chapter{Module and Author Listing}
 
 \begingroup
 

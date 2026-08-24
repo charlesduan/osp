@@ -623,7 +623,12 @@
         \leftmark
     }%
     \def\@oddhead{%
-        {\mbk@right@headerfont{\rightmark}}%
+        \setbox\@tempboxa=\hbox{\mbk@right@headerfont{\rightmark}}%
+        \ifdim\wd\@tempboxa=\z@
+            \leftmark
+        \else
+            \unhbox\@tempboxa
+        \fi
         \hfil
         {\mbk@page@headerfont{\thepage}}%
     }%
