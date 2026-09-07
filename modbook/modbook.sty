@@ -30,8 +30,10 @@
 \RequirePackage{graphicx}
 \RequirePackage[deferqs]{multichoice}
 \RequirePackage{editfile}
-\RequirePackage[hyperfootnotes=false,hidelinks,linktoc=all,bookmarks=false]{hyperref}
-\RequirePackage{strings}
+\RequirePackage[%
+    hyperfootnotes=false,hidelinks,linktoc=all,bookmarks=false
+]{hyperref}
+\RequirePackage{histrings}
 \newcommand\RepositoryPath[1]{\def\mbk@repo@path{#1}}
 \RepositoryPath{local,base}
 \newcommand\repodir[2]{\@namedef{mbk@repodir@#1}{#2}}

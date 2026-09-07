@@ -111,7 +111,7 @@
 % \section{Installation and Dependencies}
 %
 % The package uses \textsf{hyperref} for internal cross-references, and the
-% \textsf{strings} package from \textsf{hicite}. It also requires the
+% \textsf{histrings} package from \textsf{hicite}. It also requires the
 % \textsf{graphicx} and \textsf{etoolbox} packages.
 %
 %    \begin{macrocode}
@@ -119,8 +119,10 @@
 \RequirePackage{graphicx}
 \RequirePackage[deferqs]{multichoice}
 \RequirePackage{editfile}
-\RequirePackage[hyperfootnotes=false,hidelinks,linktoc=all,bookmarks=false]{hyperref}
-\RequirePackage{strings}
+\RequirePackage[%
+    hyperfootnotes=false,hidelinks,linktoc=all,bookmarks=false
+]{hyperref}
+\RequirePackage{histrings}
 %    \end{macrocode}
 %
 %
