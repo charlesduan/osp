@@ -13,7 +13,46 @@ on that counterclaim. The trial court granted defendants' motion and entered a
 judgment declaring that defendants had acquired the strip through adverse
 possession. Plaintiff appeals, and we affirm.\ldots
 
-\heregraphic{tieu-v-morgan}
+\begin{figure}
+\begin{center}
+\begin{tikzpicture}[
+x=1.25cm,
+every pin edge/.style={solid, Stealth-}, pin distance=1em,
+every pin/.style={node font=\scriptsize\itshape,align=left},
+]
+\draw
+(-1, 0) -- (8, 0)
+(0, 0) -- (0, 5) -- (2, 6.5) -- (7, 6) -- (7, 0)
+(3, 0) -- (3, 4)
+;
+\draw[thick]
+(2, 0) -- (2, 4) -- (7, 4)
+;
+\draw[dashed]
+(7, 4.3) -- (4.2, 4.5) to (3.2, 3.5) -- (3.2, 1) --
+(2.8, 1) -- (2.8, 3.5) -- (4, 4.7) -- (7, 4.5)
+;
+\path
+(1.5, 5.5) node[anchor=west] {Defendants' Deeded Property}
+(5, 2) node[align=center] {Plaintiff's\\Deeded\\Property}
+
+(3.5, 3.8) coordinate[pin={-45:Existing Fence}] (fence-ctr)
+(2, 1) coordinate[pin={135:Property\\Boundary}] (boundary)
+
+(2.5, 3.5) coordinate[pin={[pin distance=3em]180:Area awarded\\to
+Defendants\\under claim\\of adverse\\possession}] (ap)
+
+(3, 0.5) coordinate[pin={0:Continuing North--South Line\\created by existing
+fence}] (fence)
+
+(3.5, 0) node[below=1em] {SE Boise Street}
+;
+\end{tikzpicture}
+\end{center}
+
+\caption{Drawing of property boundaries in \protect\mref{tieu-v-morgan}
+(retypeset from the original in the case, and not to scale).}
+\end{figure}
 
 The two parcels subject to this appeal are adjoining residential tax lots in a
 Portland subdivision. Tax lot 3100 is rectangular, with its north side fronting
