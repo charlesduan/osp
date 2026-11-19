@@ -1,0 +1,70 @@
+\usepackage{multivol}
+\usepackage{tikz}
+\usepackage{flowchart}
+
+\usepackage[
+    paperheight=10in,
+    paperwidth=7in,
+    hmargin=1in,
+    vmargin=1.25in,
+]{geometry}
+
+\expandafter\def\csname @chapapp\endcsname{\ignorespaces}
+
+\usepackage{linlib}
+\setsansfont[
+    Scale=MatchLowercase,
+    SmallCapsFeatures={Numbers=Proportional},
+    Extension=.otf,
+    Path=../fonts/,
+    UprightFont=*-Regular,
+    BoldFont=*-Bold,
+    BoldItalicFont=*-BoldIt,
+    ItalicFont=*-It,
+]{SourceSans3}
+
+\usepackage[chapternotenums]{modbook}
+
+\CollectModules
+\CollectModuleAuthors
+
+\makeatletter
+\AddToHookWithArguments{modbook/endmodule}{%
+    \if@mainmatter
+        \expandafter\xdef\csname chapterfor@#2\endcsname{%
+            \thechapter
+        }%
+    \fi
+}
+\apptocmd{\chaptermark}{\appto\@currentlabel{ (#1)}}{}{%
+    \GenericWarning{book}{Failed to add chapter name to mark}%
+}
+\makeatother
+
+
+\HeaderFonts{\sffamily}{\sffamily}{\sffamily\scshape}{\sffamily}
+
+\RequirePackage[journalfonts,italcase,linkurl]{hicite}
+
+\repodir{cduan}{.}
+\repodir{base}{../base}
+
+\RepositoryPath{cduan,base}
+
+\usepackage{makeidx}
+\makeindex
+\def\IndexTerm#1{\index{#1}}
+
+\usepackage{pdfoutline}
+
+\title{Frameworks of Property Law}
+\author{Charles Duan, Editor \\[12pt]
+Based on \emph{Open Source Property} \\ by Stephen Clowney, James Grimmelmann,
+\\Michael Grynberg, Jeremy Sheff, and Rebecca Tushnet}
+\date{2026 Edition \\ Last updated \today}
+
+\providecommand\term[2][]{\textbf{#2}}
+
+\widowpenalty=10000
+\clubpenalty=10000
+

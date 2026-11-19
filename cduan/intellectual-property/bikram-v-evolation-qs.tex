@@ -1,0 +1,133 @@
+\expected{bikram-v-evolation}
+
+\item \textbf{Rule hierarchies}. Like many areas of law, copyright law operates
+based on a set of interrelated rules that, ideally, can be arranged in a
+hierarchical form. Upon encountering any legal rule, it is always worth making
+sure you understand where the rule fits into a larger doctrinal hierarchy. Cases
+should lay out the full rule hierarchy, but sometimes as in the \emph{Bikram
+Yoga} case, the court forgets to do this. So here's a brief overview.
+
+\begin{figure}
+
+\begin{flowchart}
+\blocks
+node (infr) {Copyright\\infringement}
+
+node[above right=of infr] (ownership) {Ownership of\\valid copyright}
+node[above right=of ownership] (102a) {\S~102(a) subject\\matter}
+node[right=of ownership] (ownership-other) {Other rules\ldots}
+
+node[right=of infr] (copy) {Copying}
+
+node[below right=of infr] (original) {Original\\elements}
+node[above right=of original]  (independent) {Independent\\creation}
+node[right=of original] (creative) {Minimal\\creativity}
+node[below right=of original] (102b) {Exceptions:\\\S~102(b)}
+node[right=of 102b] (idea) {Idea/expression\\dichotomy}
+;
+\conn[] infr.east to ownership.west;
+\conn[] infr.east to copy.west;
+\conn[] infr.east to original.west;
+\conn[] ownership.east to 102a.west;
+\conn[] ownership.east to ownership-other.west;
+\conn[] original.east to independent.west;
+\conn[] original.east to creative.west;
+\conn[] original.east to 102b.west;
+\conn[] 102b to idea.west;
+\end{flowchart}
+
+\caption{Tree representation of the copyright doctrinal hierarchy. The phrases
+in the boxes are shorthand for the exact language of the elements of the rules,
+as stated in statutes and case law. Due to space concerns, the ``top'' of the
+tree is toward the left.}
+\label{f:copyright-tree}
+\end{figure}
+
+The top of the hierarchy should always be the rule that determines the legal
+relationship between the parties. For copyright law, that would be the rule for
+copyright infringement: ``To establish infringement, two elements must be
+proven: (1) ownership of a valid copyright, and (2) copying of constituent
+elements of the work that are original.'' \sentence{feist-v-rural at 361}.
+Observe that the second element of the test actually requires two distinct
+things: (2a) copying, and (2b) original elements.
+
+As the case illustrates, \S~102(a) lays out some of the requirements for valid
+copyright ownership (there are others). No definition of copying is given; other
+cases do that. \Inline{feist-v-rural} gives the following definition of original
+elements: ``independently created by the author'' and ``possesses at least some
+minimal degree of creativity.'' \sentence{feist-v-rural at 345}. But \S~102(b)
+statutorily limits which ``original elements'' are relevant for copying, and
+\emph{Bikram Yoga} describes \S~102(b) as embodying the ``idea/expression
+dichotomy'' doctrine.
+
+All these doctrines may be connected into a hierarchy, starting from the
+infringement rule. \unskip\footnote{Note that this rule hierarchy is based on
+the one given in \inline{feist-v-rural} and \emph{Bikram Yoga}, but it is not
+the definitive copyright rule hierarchy. Among other things, some courts will
+place the \S~102(b) and the idea/expression dichotomy as sub-elements of
+copying, and there is controversy over whether the idea/expression dichotomy is
+the whole test for \S~102(b) as opposed to just one of several tests. Law school
+classes often portray rules as having fixed, well-defined elements, which is the
+right place to start when learning how to work with legal rules, but be aware
+that the real world is often messier.} A graphical ``tree'' form (the editor's
+preference) is given in Figure~\ref{f:copyright-tree}, though it can also be
+represented as an indented outline. The key is that rules are connected to their
+elements, and then those elements are further connected to sub-rules and
+sub-elements, and so on.
+
+\item \textbf{Using doctrinal hierarchies}. A doctrinal hierarchy is used in two
+main ways. First, when performing a legal analysis on an exam or in a brief or
+memorandum, you typically should start from the top of the hierarchy and work
+downwards, stating the rules as you proceed. This ensures that you touch on all
+the relevant legal questions and gives you an order for addressing the issues.
+So, for example, in \emph{Bikram Yoga}, the initial legal issue is whether
+Evolation infringed Choudhury's copyright. That depends on whether Choudhury
+owned a valid copyright, whether there was copying, and whether the copying was
+of original elements. After ownership and copying have been addressed, the
+presence of original elements is a sub-issue that depends on \S~102(b), which in
+turn depends on the idea/expression dichotomy doctrine.
+
+Second, once you reach a conclusion as to an item in the hierarchy, you work
+your way upwards to determine the consequence. In \emph{Bikram Yoga}, the court
+finds that the sequence of yoga poses is an idea rather than expression. What
+consequence does that have for the evaluation of \S~102(b)? What consequence
+does that have, in turn, for original elements, and then for infringement
+overall? The doctrinal hierarchy is the roadmap for how any given legal
+determination connects to the overall consequences for the parties, allowing you
+to predict outcomes and advise clients.
+
+\item Why should ideas be outside the scope of copyright protection? This is a
+great question for testing some of the theories of property law identified in
+\mref{intro-property-rationales}. After all, it often takes valuable labor to
+come up with good ideas like a beneficial sequence of yoga poses (a Lockean
+rationale), and society benefits from granting incentives for people to come up
+with those ideas (an economic rationale). The Ninth Circuit offers quite a few
+rebuttals, and perhaps you can come up with more. Consider, for each of them,
+whether there is a property theory or intuition at work.
+
+\defcase{kelley-v-chicago}{
+Kelley v. Chicago Park District, 635 F.3d 290 (7th Cir. 2011)
+}
+\defcase{burrow-giles-v-sarony}{
+Burrow-Giles Lithographic Co. v. Sarony, 111 U.S. 53 (1884)
+}
+
+\item What else belongs in or out of the scope of copyright protection? You will
+learn the precise answers to these questions in a copyright law course, but
+consider the following based on the reasoning of \emph{Bikram Yoga}, your
+intuitions, and general principles of law:
+\begin{itemize}
+\HiNoId
+\item A telephone book, alphabetically ordered. \sentence{see feist-v-rural}.
+\item A beautifully manicured garden. \sentence{see kelley-v-chicago}.
+\item A photograph, considering that it merely depicts the appearance of the
+real world. \sentence{see burrow-giles-v-sarony}.
+\item A selfie photograph taken by a monkey, or a painting-like image made with
+generative artificial intelligence. \emph{See} note~\ref{n:ai-creator} in this
+book.
+\item A state's official publication of its statutory code. \emph{See}
+\mref{georgia-v-public-resource}, later in this book.
+\end{itemize}
+
+\expecting{georgia-v-public-resource}
+\expecting{erickson-v-trinity-theatre-qs}

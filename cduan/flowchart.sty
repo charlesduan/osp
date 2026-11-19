@@ -1,6 +1,6 @@
 \ProvidesPackage{flowchart}
 \RequirePackage{tikz}
-\usetikzlibrary{positioning,quotes,arrows.meta}
+\usetikzlibrary{positioning,quotes,arrows.meta,shapes.multipart}
 %
 % Creates a flowchart. To add blocks, use the command \blocks followed by one or
 % more node declarations and a semicolon.
@@ -8,11 +8,24 @@
 \newenvironment{flowchart}{%
     \begin{center}%
     \begin{tikzpicture}[
+        node distance=2.37em and 2.37em,
         every edge quotes/.style={auto, node font=\itshape\small},
         >=Stealth,
+        data/.style={cylinder, shape border rotate=90, aspect=0.1},
+        caption/.style={draw=none, node font=\itshape},
+        terminal/.style={rounded rectangle},
+        object block/.style={
+            rectangle split,
+            rectangle split parts=2,
+            every text node part/.style={font=\bfseries},
+            every two node part/.style={align=left},
+        },
+        inherit arrow/.style={-{Triangle[open, scale=1.5]}},
     ]
-    \def\blocks{\path[every node/.style={draw, align=center}]}
-    \def\conn[##1] ##2 to ##3;{\path[draw, ->] (##2) edge[##1] (##3);}
+    \def\blocks{\path[
+        every node/.style={draw, align=center},
+    ]}
+    \def\conn[##1] ##2 to ##3;{\path[draw, ->] (##2) to[##1] (##3);}
     \def \hvconn[##1] ##2 to ##3;{%
         \path[draw,->,to path={-| (\tikztotarget) \tikztonodes}]
         (##2) edge[##1] (##3);%
@@ -21,6 +34,28 @@
         \path[draw,->,to path={|- (\tikztotarget) \tikztonodes}]
         (##2) edge[##1] (##3);%
     }%
+    \def\ldpin{\mkpin west(-6pt,-6pt)north east[bend right]}%
+    \def\lupin{\mkpin west(-6pt,6pt)south east[bend left]}%
+    \def\rdpin{\mkpin east(6pt,-6pt)north west[bend left]}%
+    \def\rupin{\mkpin east(6pt,6pt)south west[bend right]}%
+    \def\mkpin##1(##2)##3[##4]##5 as ##6;{%
+        \path
+        (##5.##1) ++(##2)
+        node[anchor=##3, font=\footnotesize\itshape] (lbl-##5) {##6}
+        (##5.##1) edge[##4, very thin] (lbl-##5)
+        ;
+    }
+    \def\urpin{\mkoffpin north(24pt,6pt)south west[bend left]}%
+    \def\ulpin{\mkoffpin north(-24pt,6pt)south east[bend right]}%
+    \def\drpin{\mkoffpin south(24pt,-6pt)north west[bend right]}%
+    \def\dlpin{\mkoffpin south(-24pt,-6pt)north east[bend left]}%
+    \def\mkoffpin##1(##2)##3[##4]##5 as ##6;{%
+        \path
+        (##5.##1) ++(##2)
+        node[anchor=##3, font=\footnotesize\itshape] (lbl-##5) {##6}
+        (##5) edge[##4, very thin] (lbl-##5)
+        ;
+    }
 }{%
     \end{tikzpicture}
     \end{center}
