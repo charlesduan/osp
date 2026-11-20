@@ -1,0 +1,31 @@
+%
+% linlib.sty
+%
+% Implements Libertinus font, with a few extra features.
+%
+\ProvidesFile{linlib}[2017/02/15 Libertinus font]
+\ifdefined\HCode
+    \expandafter\endinput
+\fi
+\RequirePackage{ifxetex}
+\ifxetex
+    \RequirePackage{unicode-math}
+    \setmainfont[Ligatures={TeX},BoldFont=* Bold]{Libertinus Serif}
+    \setmathfont{Libertinus Math}
+    \def\@makefnmark{{\addfontfeature{VerticalPosition=Superior}\@thefnmark}}
+    \def\docend{%
+        \nobreak\vskip\baselineskip
+        \centerline{\XeTeXglyph2226}%
+    }
+\else
+    \def\docend{%
+        \nobreak\vskip\baselineskip
+        \centerline{$\circ$}%
+    }
+\fi
+\@ifpackageloaded{commbrief}{%
+    \g@addto@macro\romanpagenumbers{%
+        \def\page@number@format{(\kern-.7pt \emph{\@roman\c@page}\kern .7pt)}%
+    }
+}{}
+\endinput

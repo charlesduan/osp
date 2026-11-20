@@ -1,0 +1,112 @@
+%
+% This is pdfoutline.sty, by Charles Duan.
+%
+% Copyright 2019 Charles Duan. This program is free software: you can
+% redistribute it and/or modify it under the terms of the GNU General Public
+% License as published by the Free Software Foundation, either version 3 of the
+% License, or (at your option) any later version.
+%
+% This program is distributed in the hope that it will be useful, but WITHOUT
+% ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+% FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+%
+% You should have received a copy of the GNU General Public License along with
+% this program.  If not, see <http://www.gnu.org/licenses/>.
+%
+% Creates a PDF outline for a document, with the advantage that any hierarchy of
+% outline items will be permitted.
+%
+\ProvidesPackage{pdfoutline}[2019/05/19 Generate PDF outline]
+\RequirePackage{histrings,etoolbox}
+%
+% This package works as follows. Each outline entry is given a class, that is, a
+% name associated with the outline. Classes are structured into a hierarchy
+% automatically: The first class encountered is the hierarchy top level, and
+% each time an unknown class is encountered, it is assumed to be one level below
+% the current level in the hierarchy.
+%
+% This macro stores the hierarchy of outline items encountered so far. This
+% macro is structured as a list of two-token pairs, which are (1) the last
+% heading class and (2) the hierarchy level associated with this class.
+\def\pdfoutline@levels{}
+%
+% Cycles through the outline levels to find the given class. If found,
+% truncates the levels at that point and executes the callback with the
+% numerical level found. If not found, appends this class to the list of levels,
+% and executes the callback with the next numerical level. Arguments are:
+%
+%   #1: The class to find
+%   #2: The callback to execute
+%
+\def\pdfoutline@find#1#2{%
+    \@test\ifx\pdfoutline@levels\@empty\fi{%
+        \gdef\pdfoutline@levels{{#1}{1}}%
+        #2{1}%
+    }{%
+        \make@find@eq{#1}%
+        \expandafter\pdfoutline@find@\pdfoutline@levels\@stop{}{#1}{#2}%
+    }%
+}
+%
+% #1 is the current class for testing, #2 the numerical level for that class, #3
+% any further classes/levels to be tested, #4 the previously tested
+% classes/levels, #5 the class to find, and #6 the callback.
+\def\pdfoutline@find@#1#2#3\@stop#4#5#6{%
+    \find@eq{#5}{#1}{%
+        \gdef\pdfoutline@levels{#4{#1}{#2}}%
+        #6{#2}%
+    }{%
+        \ifstrempty{#3}{%
+            \@tempcnta=#2\relax \advance\@tempcnta\@ne
+            \expandafter\pdfoutline@append\expandafter{\the\@tempcnta}%
+        }{%
+            \pdfoutline@find@#3\@stop
+        }{#4{#1}{#2}}{#5}{#6}% Required args for either branch of \ifstrempty
+    }%
+}
+%
+% Adds a new hierarchy level to the list of levels, and executes the callback.
+% #1 is the next hierarchy level number,
+% #2 is the previously tested classes/levels, #3 the
+% class being searched for (and not found), and #4 the callback.
+\def\pdfoutline@append#1#2#3#4{%
+    \gdef\pdfoutline@levels{#2{#3}{#1}}%
+    #4{#1}%
+}
+%
+% Adds an outline entry. #1 is the class, and #2 the text for the entry.
+%
+\def\AddOutlineItem#1#2{%
+    \pdfoutline@find{#1}{\pdfoutline@add{#2}}%
+}
+%
+% #1 is the text for entry, and #2 is the numerical level.
+\def\pdfoutline@add#1#2{%
+    \begingroup
+        \let\MakeUppercase\@iden
+        \let\emph\@iden
+        \def~{ }%
+        \def\textsection{§}%
+        \protected@edef\reserved@a{#1}%
+        \special{pdf: out #2 <<
+            /Title (\expandafter\strip@prefix\meaning\reserved@a)
+            /Dest [ @thispage /FitH @ypos ]
+        >>}%
+    \endgroup
+}
+\def\OutlineFromSect{%
+    \def\reserved@a##1\begingroup##2\@stop{%
+        \def\@sect####1####2####3####4####5####6[####7]####8{%
+            ##1\begingroup
+            \begingroup
+                \def\quad{ }%
+                \AddOutlineItem{####1}{\@seccntformat{####1}####7}%
+            \endgroup
+            ##2%
+        }%
+    }%
+    \expandafter\reserved@a
+        \@sect{##1}{##2}{##3}{##4}{##5}{##6}[##7]{##8}%
+    \@stop
+}
+\endinput
